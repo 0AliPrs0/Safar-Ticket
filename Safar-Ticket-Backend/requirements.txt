@@ -1,0 +1,8 @@
+﻿Django>=4.2
+djangorestframework
+mysqlclient
+pymysql
+PyJWT
+django-redis
+cryptography>=3.0
+mysql-connector-python
