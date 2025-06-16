@@ -1,85 +1,67 @@
+version: "3.9"
+
 services:
   db:
-    # ایمیج دیتابیس MySQL 8.0
     image: mysql:8.0
-    # متغیرهای محیطی برای پیکربندی دیتابیس MySQL
     environment:
       MYSQL_DATABASE: safarticket
-      MYSQL_ROOT_PASSWORD: Aliprs2005 # در محیط production از رمز عبور امن‌تری استفاده کنید!
-    # نگاشت پورت‌ها: پورت 3306 هاست به پورت 3306 کانتینر MySQL
+      MYSQL_ROOT_PASSWORD: Aliprs2005
     ports:
       - "3306:3306"
-    # نگاشت حجم برای persistent storage داده‌های دیتابیس
     volumes:
       - db_data:/var/lib/mysql
-      # کپی کردن فایل init.sql برای اجرای اسکریپت‌های اولیه دیتابیس
       - ./Safar-Ticket-Backend/init.sql:/docker-entrypoint-initdb.d/init.sql
-    # بررسی سلامت سرویس دیتابیس
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pAliprs2005"]
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s # مدت زمان انتظار قبل از شروع بررسی‌های سلامت
+      start_period: 30s
 
   redis:
-    # ایمیج Redis Cache
     image: redis:latest
-    # نگاشت پورت‌ها: پورت 6379 هاست به پورت 6379 کانتینر Redis
     ports:
       - "6379:6379"
 
   backend:
-    # مسیر Dockerfile برای سرویس بک‌اند
     build: ./Safar-Ticket-Backend
-    # دستوری که در کانتینر بک‌اند اجرا می‌شود.
-    # این دستور شامل اجرای migrations و سپس راه‌اندازی سرور جنگو است.
+    working_dir: /code
     command: >
-      sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    # نگاشت حجم‌ها برای توسعه: تغییرات در کد هاست مستقیماً در کانتینر منعکس می‌شود
+      sh -c "python SafarTicket/manage.py migrate && python SafarTicket/manage.py runserver 0.0.0.0:8000"
     volumes:
-      - ./Safar-Ticket-Backend:/code # مسیر کد جنگو شما در کانتینر به /code نگاشت می‌شود
-    # نگاشت پورت‌ها: پورت 8000 روی هاست به پورت 8000 داخل کانتینر بک‌اند
+      - ./Safar-Ticket-Backend:/code
     ports:
       - "8000:8000"
-    # وابستگی‌ها: اطمینان می‌دهد که دیتابیس و Redis قبل از بک‌اند آماده باشند
     depends_on:
       db:
-        condition: service_healthy # بک‌اند منتظر می‌ماند تا دیتابیس سالم باشد
+        condition: service_healthy
       redis:
-        condition: service_started # بک‌اند منتظر می‌ماند تا Redis شروع شود
-    # تنظیمات DNS (اختیاری، می‌تواند برای رفع مشکلات DNS در کانتینرها مفید باشد)
+        condition: service_started
     dns:
       - 8.8.8.8
       - 1.1.1.1
-    # متغیرهای محیطی برای تنظیمات جنگو (که در settings.py خوانده می‌شوند)
     environment:
-      - DJANGO_SETTINGS_MODULE=SafarTicket.settings # مسیر فایل settings جنگو
-      - JWT_SECRET_KEY=jsd8@wF8#Lxq2kPmZ3!vQ1eL*Gd94Tpw # کلید JWT (در production تغییر دهید!)
-      - SECRET_KEY=some-very-secret-key # کلید Secret جنگو (در production تغییر دهید!)
+      - DJANGO_SETTINGS_MODULE=SafarTicket.settings
+      - JWT_SECRET_KEY=jsd8@wF8#Lxq2kPmZ3!vQ1eL*Gd94Tpw
+      - SECRET_KEY=some-very-secret-key
       - EMAIL_USER=safarticket00@gmail.com
-      - EMAIL_PASS=jgtivimugkolefyi # رمز عبور ایمیل (در production تغییر دهید!)
-      # متغیرهای محیطی برای اتصال به دیتابیس MySQL
+      - EMAIL_PASS=jgtivimugkolefyi
       - DB_NAME=safarticket
-      - DB_USER=root # یا کاربر دیتابیس شما
-      - DB_PASSWORD=Aliprs2005 # رمز عبور دیتابیس شما
-      - DB_HOST=db # نام سرویس دیتابیس در docker-compose
+      - DB_USER=root
+      - DB_PASSWORD=Aliprs2005
+      - DB_HOST=db
       - DB_PORT=3306
 
   cron:
-    # مسیر Dockerfile برای سرویس cron (که همان Dockerfile بک‌اند است)
     build: ./Safar-Ticket-Backend
-    # دستور اجرای کرون‌جاب‌ها
+    working_dir: /code
     command: >
-      sh -c "crontab /code/cron/cronjob && cron -f"
-    # نگاشت حجم‌ها برای دسترسی به کد جنگو
+      sh -c "crontab SafarTicket/cron/cronjob && cron -f"
     volumes:
       - ./Safar-Ticket-Backend:/code
-    # وابستگی‌ها به دیتابیس و بک‌اند
     depends_on:
       - db
       - backend
-    # متغیرهای محیطی مورد نیاز برای جنگو در محیط cron
     environment:
       - DJANGO_SETTINGS_MODULE=SafarTicket.settings
       - DB_NAME=safarticket
@@ -87,30 +69,18 @@ services:
       - DB_PASSWORD=Aliprs2005
       - DB_HOST=db
       - DB_PORT=3306
-      - JWT_SECRET_KEY=jsd8@wF8#Lxq2kPmZ3!vQ1eL*Gd94Tpw
-      - SECRET_KEY=some-very-secret-key
-      - EMAIL_USER=safarticket00@gmail.com
-      - EMAIL_PASS=jgtivimugkolefyi
-
 
   frontend:
-    # مسیر Dockerfile برای سرویس فرانت‌اند React
     build: ./Safar-Ticket-Frontend
-    # نگاشت پورت‌ها: پورت 3000 روی هاست به پورت 80 داخل کانتینر فرانت‌اند (Nginx)
     ports:
       - "3000:80"
-    # وابستگی به سرویس بک‌اند: فرانت‌اند برای فراخوانی APIها به بک‌اند نیاز دارد
     depends_on:
       - backend
-    # متغیر محیطی برای React که در زمان بیلد استفاده می‌شود (برای API_URL)
     environment:
-      - REACT_APP_API_URL=http://localhost:8000 # برای توسعه محلی
-    # volumes: # در حالت تولید نیازی به volumes برای frontend نیست زیرا فایل‌ها بیلد شده‌اند
-    #   - ./Safar-Ticket-Frontend:/app # فقط در صورت نیاز به hot-reloading در توسعه (که بهتر است از webpack-dev-server خود React استفاده کنید)
+      - REACT_APP_API_URL=http://localhost:8000
     dns:
       - 8.8.8.8
       - 1.1.1.1
-        
-# تعریف ولوم (Volume) برای داده‌های دیتابیس جهت پایداری
+
 volumes:
   db_data:
