@@ -107,7 +107,10 @@ services:
       - REACT_APP_API_URL=http://localhost:8000 # برای توسعه محلی
     # volumes: # در حالت تولید نیازی به volumes برای frontend نیست زیرا فایل‌ها بیلد شده‌اند
     #   - ./Safar-Ticket-Frontend:/app # فقط در صورت نیاز به hot-reloading در توسعه (که بهتر است از webpack-dev-server خود React استفاده کنید)
-
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+        
 # تعریف ولوم (Volume) برای داده‌های دیتابیس جهت پایداری
 volumes:
   db_data:
