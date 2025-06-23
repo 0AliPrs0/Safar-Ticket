@@ -1,6 +1,5 @@
 FROM python:3.11-slim
 
-# نصب وابستگی‌های سیستمی مورد نیاز برای MySQL Client و سایر پکیج‌های پایتون
 RUN apt-get update && apt-get install -y \
     libmariadb-dev \
     libmariadb-dev-compat \
@@ -17,7 +16,8 @@ ENV PYTHONUNBUFFERED 1
 WORKDIR /code
 
 COPY requirements.txt /code/
-RUN pip install --no-cache-dir -r requirements.txt
+
+RUN pip install --no-cache -r requirements.txt --default-timeout=10000 --trusted-host pypi.org --trusted-host files.pythonhosted.org -i https://pypi.org/simple
 
 COPY . /code/
 
