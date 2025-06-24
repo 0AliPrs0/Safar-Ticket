@@ -8,6 +8,8 @@ import json
 import redis
 from ..utils.email_utils import send_otp_email
 from datetime import timedelta
+from django.contrib.auth.hashers import make_password
+
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
@@ -46,7 +48,7 @@ class SignupUserAPIView(APIView):
             if cursor.fetchone():
                 return Response({'error': 'User with this email already exists'}, status=400)
 
-            password_hash = hashlib.sha256(password.encode()).hexdigest()
+            password_hash = make_password(password) 
             data['password_hash'] = password_hash
             
             user_data_json = json.dumps(data)

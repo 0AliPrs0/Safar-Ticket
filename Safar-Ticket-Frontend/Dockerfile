@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt
 
 COPY package*.json ./
 
-#RUN npm install --legacy-peer-deps --fetch-timeout=180000
+RUN npm install 
 
 COPY . .
 

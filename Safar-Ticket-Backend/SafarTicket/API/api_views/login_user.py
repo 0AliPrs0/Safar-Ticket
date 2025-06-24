@@ -11,7 +11,7 @@ redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
 class LoginAPIView(APIView):
     def post(self, request):
-        email = request.data.get('email')
+        email = request.data.get('username')
         password = request.data.get('password')
 
         if not email or not password:

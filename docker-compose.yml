@@ -1,4 +1,6 @@
 version: "3.9"
+name: safarticket
+
 
 services:
   db:
@@ -70,17 +72,17 @@ services:
       - DB_HOST=db
       - DB_PORT=3306
 
-  frontend:
-    build: ./Safar-Ticket-Frontend
-    ports:
-      - "3000:80"
-    depends_on:
-      - backend
-    environment:
-      - REACT_APP_API_URL=http://localhost:8000
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
+  # frontend:
+  #   build: ./Safar-Ticket-Frontend
+  #   ports:
+  #     - "3000:80"
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     - REACT_APP_API_URL=http://localhost:8000
+  #   dns:
+  #     - 8.8.8.8
+  #     - 1.1.1.1
 
 volumes:
   db_data:
