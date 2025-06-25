@@ -1,83 +1,50 @@
-import { useState, useEffect } from "react";
-import api from "../api";
-import Note from "../components/Note"
-import "../styles/Home.css"
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function Home() {
-    const [notes, setNotes] = useState([]);
-    const [content, setContent] = useState("");
-    const [title, setTitle] = useState("");
+function Header() {
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        getNotes();
-    }, []);
-
-    const getNotes = () => {
-        api
-            .get("/api/notes/")
-            .then((res) => res.data)
-            .then((data) => {
-                setNotes(data);
-                console.log(data);
-            })
-            .catch((err) => alert(err));
-    };
-
-    const deleteNote = (id) => {
-        api
-            .delete(`/api/notes/delete/${id}/`)
-            .then((res) => {
-                if (res.status === 204) alert("Note deleted!");
-                else alert("Failed to delete note.");
-                getNotes();
-            })
-            .catch((error) => alert(error));
-    };
-
-    const createNote = (e) => {
-        e.preventDefault();
-        api
-            .post("/api/notes/", { content, title })
-            .then((res) => {
-                if (res.status === 201) alert("Note created!");
-                else alert("Failed to make note.");
-                getNotes();
-            })
-            .catch((err) => alert(err));
+    const handleLogout = () => {
+        navigate('/logout');
     };
 
     return (
-        <div>
-            <div>
-                <h2>Notes</h2>
-                {notes.map((note) => (
-                    <Note note={note} onDelete={deleteNote} key={note.id} />
-                ))}
-            </div>
-            <h2>Create a Note</h2>
-            <form onSubmit={createNote}>
-                <label htmlFor="title">Title:</label>
-                <br />
-                <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    required
-                    onChange={(e) => setTitle(e.target.value)}
-                    value={title}
-                />
-                <label htmlFor="content">Content:</label>
-                <br />
-                <textarea
-                    id="content"
-                    name="content"
-                    required
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                ></textarea>
-                <br />
-                <input type="submit" value="Submit"></input>
-            </form>
+        <header className="bg-white shadow-md">
+            <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
+                <div className="text-2xl font-bold text-[#0D47A1]">
+                    ✈️ SafarTicket
+                </div>
+                <div>
+                    <button 
+                        onClick={handleLogout}
+                        className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+                    >
+                        Logout
+                    </button>
+                </div>
+            </nav>
+        </header>
+    );
+}
+
+function Home() {
+    return (
+        <div className="min-h-screen bg-[#F8F9FA]">
+            <Header />
+            <main className="container mx-auto px-6 py-12 text-center">
+                <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Welcome to SafarTicket!</h1>
+                <p className="text-lg text-gray-600 mb-8">You are successfully logged in. Start planning your next journey!</p>
+                <div className="max-w-2xl mx-auto">
+                    {/* در اینجا می‌توانید کامپوننت جستجو یا داشبورد کاربر را قرار دهید */}
+                    <div className="bg-white p-8 rounded-lg shadow-lg border border-gray-200">
+                        <h2 className="text-2xl font-semibold text-[#0D47A1] mb-6">Dashboard</h2>
+                        <p className="text-gray-500">Your recent bookings and travel information will appear here.</p>
+                        <button className="mt-6 bg-[#FFA726] text-white px-6 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-all">
+                            Search for a New Trip
+                        </button>
+                    </div>
+                </div>
+            </main>
         </div>
     );
 }

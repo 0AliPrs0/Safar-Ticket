@@ -1,21 +1,15 @@
-import react from "react"
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"
-import Login from "./pages/Login"
-import Register from "./pages/Register"
-import Home from "./pages/Home"
-import NotFound from "./pages/NotFound"
-import ProtectedRoute from "./components/ProtectedRoute"
-import CheckEmail from "./pages/CheckEmail"
-import VerifyEmail from "./pages/VerifyEmail"
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Home from "./pages/Home";
+import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PublicRoute from "./components/PublicRoute";
+import VerifyOTP from "./pages/VerifyOTP";
 
 function Logout() {
-  localStorage.clear()
-  return <Navigate to="/login" />
-}
-
-function RegisterAndLogout() {
-  localStorage.clear()
-  return <Register />
+  localStorage.clear();
+  return <Navigate to="/login" />;
 }
 
 function App() {
@@ -30,15 +24,28 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/login" element={<Login />} />
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
         <Route path="/logout" element={<Logout />} />
-        <Route path="/register" element={<RegisterAndLogout />} />
-        <Route path="/check-email" element={<CheckEmail />} />
-        <Route path="/verify-email/:token" element={<VerifyEmail />} />
-        <Route path="*" element={<NotFound />}></Route>
+        <Route path="/verify-otp" element={<VerifyOTP />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
 export default App;
