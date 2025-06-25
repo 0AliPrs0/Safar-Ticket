@@ -4,35 +4,55 @@ from django.conf import settings
 import smtplib
 from email.mime.text import MIMEText
 from django.conf import settings
-import datetime
 
 
-def send_otp_email(to_email, otp):
-    subject = "Your Verification Code"
-    frontend_url = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:8000')
-    verification_link = f"{frontend_url}/api/verify-otp/?email={to_email}&otp={otp}"
+def send_verification_email(to_email, token):
+    subject = "Verify Your Account on SafarTicket"
+    frontend_url = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:5173')
+    verification_link = f"{frontend_url}/verify-email/{token}"
 
     body = f"""
     <html>
+      <head>
+        <style>
+          body {{ font-family: Arial, sans-serif; }}
+          .container {{ padding: 20px; }}
+          .button {{
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+          }}
+        </style>
+      </head>
       <body>
-        <p>Your verification code is: <b>{otp}</b></p>
-        <p>This code will expire in 5 minutes.</p>
-        <p>Alternatively, you can click the link below to verify your account:</p>
-        <p><a href="{verification_link}">Verify Your Account</a></p>
-        <p>If you did not request this code, please ignore this email.</p>
+        <div class="container">
+          <h2>Welcome to SafarTicket!</h2>
+          <p>Thank you for signing up. Please click the button below to verify your email address and activate your account.</p>
+          <p><a href="{verification_link}" class="button">Verify My Account</a></p>
+          <p>This link will expire in 15 minutes.</p>
+          <p>If you did not sign up for this account, you can safely ignore this email.</p>
+        </div>
       </body>
     </html>
     """
-
     msg = MIMEText(body, 'html')
     msg['Subject'] = subject
     msg['From'] = settings.EMAIL_HOST_USER
     msg['To'] = to_email
 
     with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
-        server.starttls()
-        server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
-        server.send_message(msg)
+          server.starttls()
+          server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+          server.send_message(msg)
+
 
 def send_payment_reminder_email(to_email, expiration_time, reservation_details):
     subject = "Payment Reminder for Your Ticket Reservation"

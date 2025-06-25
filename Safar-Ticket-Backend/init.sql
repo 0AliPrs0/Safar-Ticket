@@ -9,7 +9,7 @@
         first_name VARCHAR(100) NOT NULL,
         last_name VARCHAR(100) NOT NULL,
         email VARCHAR(255) UNIQUE,
-        phone_number VARCHAR(20) UNIQUE,
+        phone_number VARCHAR(20) UNIQUE,    
         user_type ENUM('CUSTOMER', 'ADMIN') NOT NULL,
         city VARCHAR(100),
         password_hash VARCHAR(255) NOT NULL,
@@ -24,7 +24,7 @@
         DROP COLUMN city;
 
     ALTER TABLE User
-        ADD COLUMN city_id BIGINT NOT NULL;
+        ADD COLUMN city_id BIGINT;
 
     ALTER TABLE User
         ADD COLUMN birth_date Date NULL;
@@ -35,6 +35,9 @@
             ON DELETE CASCADE;
 
     ALTER TABLE User ADD COLUMN wallet INT NOT NULL DEFAULT 0;
+
+    ALTER TABLE User MODIFY COLUMN city_id BIGINT NULL;
+
 
     CREATE TABLE Terminal (
     terminal_id BIGINT PRIMARY KEY AUTO_INCREMENT,
