@@ -1,6 +1,6 @@
 from django.urls import path
 from .api_views.city_list import CityListView
-from .api_views.otp import VerifyEmailAPIView
+from .api_views.otp import VerifyOtpAPIView
 from .api_views.signup_user import SignupUserAPIView
 from .api_views.ticket_detail import TicketDetailAPIView
 from .api_views.profile_user_update import ProfileUserUpdateAPIView
@@ -19,7 +19,7 @@ from .api_views.login_user import LoginAPIView
 
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
-    path('verify-otp/<str:token>/', VerifyEmailAPIView.as_view()),
+    path('verify-otp/', VerifyOtpAPIView.as_view()), 
     path('login/', LoginAPIView.as_view()),
     path('cities/', CityListView.as_view()),
     path('ticket/<int:ticket_id>/', TicketDetailAPIView.as_view()),

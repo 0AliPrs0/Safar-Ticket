@@ -1,14 +1,14 @@
-from ..utils.email_utils import send_verification_email
-from datetime import timedelta
-import hashlib
 import MySQLdb
 from rest_framework.views import APIView
 from rest_framework.response import Response
+import datetime
+import hashlib
 import re
+import random
 import json
 import redis
-from django.conf import settings
-import secrets
+from ..utils.email_utils import send_otp_email
+from datetime import timedelta
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
@@ -18,7 +18,7 @@ class SignupUserAPIView(APIView):
         if not re.search(r"[a-z]", password): return False
         if not re.search(r"[A-Z]", password): return False
         if not re.search(r"[0-9]", password): return False
-        if not re.search(r"[!@#$%^&*(),.?:{}|<>]", password): return False
+        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password): return False
         return True
 
     def post(self, request):
@@ -47,20 +47,26 @@ class SignupUserAPIView(APIView):
             if cursor.fetchone():
                 return Response({'error': 'User with this email already exists'}, status=400)
 
-            verification_token = secrets.token_urlsafe(32)
-
             password_hash = hashlib.sha256(password.encode()).hexdigest()
-            data['password_hash'] = password_hash
-            user_data_to_store = data.copy()
-            del user_data_to_store['password'] 
             
-            user_data_json = json.dumps(user_data_to_store)
+            temp_user_data = {
+                'first_name': data.get('first_name'),
+                'last_name': data.get('last_name'),
+                'email': email,
+                'phone_number': data.get('phone_number'),
+                'password_hash': password_hash,
+            }
             
-            redis_client.setex(f"verify_token:{verification_token}", timedelta(minutes=15), user_data_json)
+            user_data_json = json.dumps(temp_user_data)
             
-            send_verification_email(email, verification_token)
+            otp = str(random.randint(100000, 999999))
+            
+            redis_client.setex(f"temp_user:{email}", timedelta(minutes=15), user_data_json)
+            redis_client.setex(f"signup_otp:{email}", timedelta(minutes=15), otp)
 
-            return Response({'message': 'A verification link has been sent to your email.'}, status=200)
+            send_otp_email(email, otp)
+
+            return Response({'message': 'OTP sent to your email for account verification.'}, status=200)
 
         except MySQLdb.Error as e:
             return Response({'error': f"Database error: {str(e)}"}, status=500)
