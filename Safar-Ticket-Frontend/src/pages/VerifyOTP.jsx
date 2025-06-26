@@ -5,6 +5,7 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import AuthFormContainer from '../components/AuthFormContainer';
 import OtpInput from '../components/OtpInput';
 
+
 function useQuery() {
     return new URLSearchParams(useLocation().search);
 }
@@ -14,45 +15,25 @@ function VerifyOTP() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState("");
-    const [timer, setTimer] = useState(300);
+    const [timer, setTimer] = useState(300); 
     const [canResend, setCanResend] = useState(false);
     
-    const formRef = useRef(null); 
     const navigate = useNavigate();
     const location = useLocation();
     const query = useQuery();
     
     const email = location.state?.email || query.get('email');
-    const otpExpiryKey = `otp_expiry_${email}`;
+    const hasAutoSubmitted = useRef(false);
+
 
     useEffect(() => {
         const otpFromQuery = query.get('otp');
-        if (otpFromQuery && otpFromQuery.length === 6) {
+        if (otpFromQuery && otpFromQuery.length === 6 && !hasAutoSubmitted.current) {
+            hasAutoSubmitted.current = true;
             setOtp(otpFromQuery);
-            setTimeout(() => {
-                if (formRef.current) {
-                    formRef.current.requestSubmit();
-                }
-            }, 300);
+            handleAutoSubmit(otpFromQuery);
         }
-    }, [query]);
-
-    useEffect(() => {
-        const storedExpiry = localStorage.getItem(otpExpiryKey);
-        let initialTime;
-
-        if (storedExpiry) {
-            const remainingTime = Math.round((parseInt(storedExpiry, 10) - Date.now()) / 1000);
-            initialTime = remainingTime > 0 ? remainingTime : 0;
-        } else {
-            const newExpiry = Date.now() + 300000;
-            localStorage.setItem(otpExpiryKey, newExpiry);
-            initialTime = 300;
-        }
-        
-        setTimer(initialTime);
-
-    }, [email]);
+    }, [query, email]);
 
     useEffect(() => {
         if (timer > 0) {
@@ -63,31 +44,39 @@ function VerifyOTP() {
             return () => clearInterval(interval);
         } else {
             setCanResend(true);
-            localStorage.removeItem(otpExpiryKey);
         }
-    }, [timer, email]);
+    }, [timer]);
 
     if (!email) {
         return (
             <AuthFormContainer title="Error">
                 <p className="text-center text-red-500">
-                    No email address provided. Please <Link to="/register" className="font-medium text-[#0D47A1] hover:underline">register</Link> again.
+                    No email address provided. Please <Link to="/register" className="font-medium text-primary-blue hover:underline">register</Link> again.
                 </p>
             </AuthFormContainer>
         );
     }
 
-    const handleSubmit = async (e) => {
+    const handleAutoSubmit = async (autoOtp) => {
+        setLoading(true);
+        setError(null);
+        try {
+            await api.post("/api/verify-otp/", { email, otp: autoOtp });
+            navigate("/login", { state: { message: "Account verified successfully! You can now log in." } });
+        } catch (err) {
+            setError("Verification via link failed. Please enter the code manually.");
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    const handleManualSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
-        setSuccess("");
         try {
-            const res = await api.post("/api/verify-otp/", { email, otp });
-            if (res.status === 200) {
-                localStorage.removeItem(otpExpiryKey);
-                navigate("/login", { state: { message: "Account verified successfully! You can now log in." } });
-            }
+            await api.post("/api/verify-otp/", { email, otp });
+            navigate("/login", { state: { message: "Account verified successfully! You can now log in." } });
         } catch (err) {
             setError(err.response?.data?.error || "Invalid or expired OTP. Please try again.");
         } finally {
@@ -101,14 +90,13 @@ function VerifyOTP() {
         setError(null);
         setSuccess("");
         try {
+            // یک API برای ارسال مجدد کد باید در بک‌اند وجود داشته باشد
             await api.post("/api/resend-otp/", { email });
-            const newExpiry = Date.now() + 300000;
-            localStorage.setItem(otpExpiryKey, newExpiry);
-            setTimer(300);
+            setTimer(300); // ریست کردن تایمر
             setCanResend(false);
-            setSuccess("A new OTP has been sent.");
+            setSuccess("A new OTP has been sent to your email.");
         } catch (err) {
-            setError(err.response?.data?.error || "Failed to resend OTP.");
+            setError(err.response?.data?.error || "Failed to resend OTP. Please try again later.");
         } finally {
             setLoading(false);
         }
@@ -126,28 +114,37 @@ function VerifyOTP() {
                 <p>An OTP has been sent to <strong>{email}</strong>.</p>
                 <p>Please enter the 6-digit code below.</p>
             </div>
-            <form ref={formRef} onSubmit={handleSubmit} className="space-y-8">
+            <form onSubmit={handleManualSubmit} className="space-y-8">
                 <OtpInput value={otp} onChange={setOtp} />
                 
                 {loading && <LoadingIndicator />}
                 {error && <p className="text-red-500 text-sm text-center font-semibold">{error}</p>}
                 {success && <p className="text-green-500 text-sm text-center font-semibold">{success}</p>}
                 
-                <button className="w-full bg-[#FFA726] text-white py-3 rounded-lg text-lg font-bold hover:bg-opacity-90 transition-all duration-200 shadow-lg shadow-orange-500/30 disabled:bg-gray-400 disabled:shadow-none" type="submit" disabled={loading || otp.length < 6}>
+                <button 
+                    className="w-full bg-accent-orange text-white py-3 rounded-lg text-lg font-bold hover:bg-opacity-90 transition-all duration-200 shadow-lg shadow-orange-500/30 disabled:bg-gray-400 disabled:shadow-none" 
+                    type="submit" 
+                    disabled={loading || otp.length < 6}
+                >
                     Verify Account
                 </button>
 
-                <div className="text-center text-sm text-gray-500">
+                <div className="text-center text-sm text-gray-500 h-5">
                     {canResend ? (
                         <span>
                             Didn't receive the code?{' '}
-                            <button type="button" onClick={handleResend} className="font-semibold text-[#0D47A1] hover:underline bg-transparent border-none p-0 cursor-pointer disabled:text-gray-400 disabled:cursor-not-allowed" disabled={loading}>
+                            <button 
+                                type="button" 
+                                onClick={handleResend} 
+                                className="font-semibold text-primary-blue hover:underline bg-transparent border-none p-0 cursor-pointer disabled:text-gray-400 disabled:cursor-not-allowed" 
+                                disabled={loading}
+                            >
                                 Resend Code
                             </button>
                         </span>
                     ) : (
                         <span>
-                            You can resend the code in <span className="font-bold text-[#0D47A1]">{formatTime(timer)}</span>
+                            You can resend the code in <span className="font-bold text-primary-blue">{formatTime(timer)}</span>
                         </span>
                     )}
                 </div>
