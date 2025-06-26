@@ -5,9 +5,9 @@ import datetime
 import redis
 import json
 from datetime import datetime, timedelta
+from django.http import JsonResponse
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
-
 
 class SearchTicketsAPIView(APIView):
     def post(self, request):
@@ -16,8 +16,8 @@ class SearchTicketsAPIView(APIView):
             return Response({"error": "Authentication credentials were not provided."}, status=401)
 
         data = request.data
-        origin_city_name = data.get('origin_city')
-        destination_city_name = data.get('destination_city')
+        origin_city_name = data.get('origin_city_name')
+        destination_city_name = data.get('destination_city_name')
         travel_date_str = data.get('travel_date')
 
         transport_type = data.get('transport_type')
@@ -98,8 +98,10 @@ class SearchTicketsAPIView(APIView):
                     dest_city.city_name AS destination_city_name,
                     dest_term.terminal_name AS destination_terminal_name,
                     tr.arrival_time,
+                    tr.return_time,
                     tr.price,
                     tr.travel_class,
+                    tr.is_round_trip,
                     tr.remaining_capacity,
                     tc.company_name AS transport_company_name,
                     COUNT(r.reservation_id) AS demand_score
@@ -152,6 +154,13 @@ class SearchTicketsAPIView(APIView):
             for row in rows:
                 row['departure_time'] = row['departure_time'].isoformat() if isinstance(row.get('departure_time'), datetime) else str(row.get('departure_time'))
                 row['arrival_time'] = row['arrival_time'].isoformat() if isinstance(row.get('arrival_time'), datetime) else str(row.get('arrival_time'))
+                
+                # فقط اگر سفر دوطرفه بود، زمان برگشت را اضافه کن
+                if row.get('is_round_trip') and row.get('return_time'):
+                    row['return_time'] = row['return_time'].isoformat() if isinstance(row['return_time'], datetime) else str(row['return_time'])
+                else:
+                    row['return_time'] = None
+                
                 results.append(row)
 
             try:

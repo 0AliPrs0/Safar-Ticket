@@ -2,13 +2,13 @@ import MySQLdb
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
+from django.http import JsonResponse
 import redis
 import json
 from datetime import timedelta
 from ..utils.email_utils import send_payment_reminder_email
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
-
 
 class ReserveTicketAPIView(APIView):
     def post(self, request):
@@ -40,7 +40,7 @@ class ReserveTicketAPIView(APIView):
             conn.begin()
 
             cursor.execute("""
-                SELECT tr.remaining_capacity, tr.total_capacity, tr.transport_type, tr.departure_time, tr.price,
+                SELECT tr.remaining_capacity, tr.total_capacity, tr.transport_type, tr.departure_time, tr.arrival_time, tr.return_time, tr.is_round_trip, tr.price,
                        dep_city.city_name AS departure_city, dest_city.city_name AS destination_city
                 FROM Travel tr
                 JOIN Terminal dep_term ON tr.departure_terminal_id = dep_term.terminal_id
@@ -161,7 +161,6 @@ class ReserveTicketAPIView(APIView):
                 cursor.close()
             if conn:
                 conn.close()
-
 
 class UserReservationsAPIView(APIView):
     def get(self, request):

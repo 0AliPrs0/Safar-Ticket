@@ -1,16 +1,22 @@
 import MySQLdb
+from django.http import JsonResponse
+from django.views import View
+import random
 import redis 
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from ..utils.email_utils import send_otp_email, send_payment_reminder_email 
+import datetime
+import hashlib 
+from ..utils.jwt import generate_access_token, generate_refresh_token, verify_jwt
+from rest_framework.permissions import IsAuthenticated
 import json
-
+from datetime import datetime, timedelta 
+from django.http import JsonResponse
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
-
-
 class TicketDetailAPIView(APIView):
-
     def get(self, request, ticket_id):
         user_info = getattr(request, 'user_info', None)
         if not user_info:
@@ -23,19 +29,20 @@ class TicketDetailAPIView(APIView):
                 password="Aliprs2005",
                 database="safarticket",
                 port=3306,
-                cursorclass=MySQLdb.cursors.DictCursor 
+                cursorclass=MySQLdb.cursors.DictCursor
             )
             cursor = conn.cursor()
 
             cursor.execute("""
                 SELECT 
                     t.ticket_id,
-                    t.seat_number, 
                     r.reservation_time,
                     c1.city_name AS departure_city,
                     tr.departure_time,
                     c2.city_name AS destination_city,
                     tr.arrival_time,
+                    tr.return_time,
+                    tr.is_round_trip,
                     tr.price,
                     tr.transport_type,
                     vd.vehicle_type,
@@ -56,10 +63,9 @@ class TicketDetailAPIView(APIView):
                 return Response({"error": "Ticket not found"}, status=404)
 
             vehicle_id = ticket["vehicle_id"]
-            transport_type = ticket["vehicle_type"] 
+            transport_type = ticket["vehicle_type"]
 
             facilities = {}
-
             if transport_type == 'train':
                 cursor.execute("SELECT facilities FROM TrainDetail WHERE train_id = %s", (vehicle_id,))
                 result = cursor.fetchone()
@@ -78,15 +84,20 @@ class TicketDetailAPIView(APIView):
 
             cursor.close()
             conn.close()
+            
+            return_time = None
+            if ticket.get("is_round_trip") and ticket.get("return_time"):
+                return_time = ticket["return_time"].isoformat() if isinstance(ticket["return_time"], datetime) else str(ticket["return_time"])
 
             response_data = {
                 "ticket_id": ticket["ticket_id"],
-                "seat_number": ticket["seat_number"], 
                 "reservation_time": ticket["reservation_time"],
                 "departure_city": ticket["departure_city"],
                 "departure_time": ticket["departure_time"],
                 "destination_city": ticket["destination_city"],
                 "arrival_time": ticket["arrival_time"],
+                "is_round_trip": ticket["is_round_trip"],
+                "return_time": return_time,
                 "price": ticket["price"],
                 "transport_type": ticket["transport_type"],
                 "facilities": facilities
