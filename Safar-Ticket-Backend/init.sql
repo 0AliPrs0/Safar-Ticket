@@ -90,6 +90,9 @@
             FOREIGN KEY (transport_company_id) REFERENCES TransportCompany(transport_company_id)
             ON DELETE CASCADE;
 
+    ALTER TABLE Travel
+        ADD COLUMN return_time DATETIME NULL;
+
     CREATE TABLE VehicleDetail (
         vehicle_id BIGINT PRIMARY KEY AUTO_INCREMENT,
         vehicle_type ENUM('train', 'flight', 'bus') NOT NULL
@@ -761,6 +764,10 @@
     UPDATE Travel
     SET Travel.departure_terminal_id = Travel.departure_terminal_id + 104
     WHERE Travel.travel_id < 3;
+
+    UPDATE Travel
+    SET return_time = DATE_ADD(arrival_time, INTERVAL 3 DAY)
+    WHERE is_round_trip = true;
 
     INSERT INTO VehicleDetail (vehicle_type)
     VALUES
