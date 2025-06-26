@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api';
-import "../styles/Form.css";
 import LoadingIndicator from '../components/LoadingIndicator';
 
 function VerifyEmail() {

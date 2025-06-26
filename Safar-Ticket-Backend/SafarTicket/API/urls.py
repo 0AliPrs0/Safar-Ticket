@@ -4,6 +4,7 @@ from .api_views.otp import VerifyOtpAPIView
 from .api_views.signup_user import SignupUserAPIView
 from .api_views.ticket_detail import TicketDetailAPIView
 from .api_views.profile_user_update import ProfileUserUpdateAPIView
+from .api_views.profile_user_detail import ProfileUserDetailAPIView
 from .api_views.search_tickets import SearchTicketsAPIView
 from .api_views.ticket_payment import TicketPaymentAPIView
 from .api_views.user_bookings import UserBookingsAPIView
@@ -15,12 +16,11 @@ from .api_views.penalty_check import PenaltyCheckAPIView
 from .api_views.token_views import RefreshTokenAPIView
 from .api_views.login_user import LoginAPIView
 
-
-
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
-    path('verify-otp/', VerifyOtpAPIView.as_view()), 
+    path('verify-otp/', VerifyOtpAPIView.as_view()),
     path('login/', LoginAPIView.as_view()),
+    path('profile/', ProfileUserDetailAPIView.as_view()),
     path('cities/', CityListView.as_view()),
     path('ticket/<int:ticket_id>/', TicketDetailAPIView.as_view()),
     path('update-profile/', ProfileUserUpdateAPIView.as_view()),
@@ -35,5 +35,4 @@ urlpatterns = [
     path('reservation/', UserReservationsAPIView.as_view()),
     path('check-penalty/', PenaltyCheckAPIView.as_view()),
     path('refresh-token/', RefreshTokenAPIView.as_view()),
-
 ]

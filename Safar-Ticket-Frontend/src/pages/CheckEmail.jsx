@@ -1,6 +1,5 @@
 import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import "../styles/Form.css";
 
 function CheckEmail() {
   const location = useLocation();
