@@ -1,27 +1,33 @@
 import { useState, useEffect } from "react";
 import api from "../api";
-import { useNavigate } from "react-router-dom";
 import LoadingIndicator from "../components/LoadingIndicator";
+import SlideOutMenu from "../components/SlideOutMenu"; // کامپوننت منوی کشویی
+import { useNavigate } from 'react-router-dom';
 
+// Icons
+const MenuIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
+const HomeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>;
 const UserCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="10" r="3"></circle><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"></path></svg>;
-const HomeIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>;
-const LogoutIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
 
-const ProfileHeader = () => {
+// کامپوننت هدر که دکمه منو را دارد
+const ProfileHeader = ({ onMenuClick }) => {
     const navigate = useNavigate();
     return (
         <header className="bg-white shadow-sm w-full">
             <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-                <h1 className="text-xl font-bold text-[#0D47A1]">User Dashboard</h1>
+                {/* دکمه منو در تمام اندازه‌های صفحه نمایش داده می‌شود */}
+                <button onClick={onMenuClick} className="p-2 rounded-full hover:bg-gray-100">
+                    <MenuIcon />
+                </button>
+                <h1 className="text-xl font-bold text-[#0D47A1]">User Profile</h1>
                 <button onClick={() => navigate("/")} className="flex items-center gap-2 text-[#333] font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
                     <HomeIcon />
-                    <span>Back to Home</span>
+                    <span className="hidden sm:inline">Back to Home</span>
                 </button>
             </nav>
         </header>
     );
 };
-
 
 function Profile() {
   const [formData, setFormData] = useState({
@@ -37,7 +43,7 @@ function Profile() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");
-  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // State برای کنترل منو
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -89,7 +95,7 @@ function Profile() {
     try {
       const res = await api.put("/api/update-profile/", filteredData);
       setSuccess(res.data.message || "Profile updated successfully!");
-       setTimeout(() => setSuccess(""), 3000); // پاک کردن پیام موفقیت بعد از ۳ ثانیه
+       setTimeout(() => setSuccess(""), 3000);
     } catch (err) {
       setError(err.response?.data?.error || "Failed to update profile.");
     } finally {
@@ -101,10 +107,13 @@ function Profile() {
     return <div className="flex justify-center items-center h-screen bg-[#F8F9FA]"><LoadingIndicator /></div>
   }
 
+  // ساختار اصلی کد شما حفظ شده و فقط منو به آن اضافه شده است
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
-      <ProfileHeader />
-      <main className="container mx-auto p-6">
+      <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={formData} />
+      <ProfileHeader onMenuClick={() => setIsMenuOpen(true)} />
+
+      <main className="container mx-auto p-6 pb-24">
         <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
           <div className="flex items-center mb-8">
             <UserCircleIcon />
