@@ -6,8 +6,7 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
-import CheckEmail from "./pages/CheckEmail";
-import VerifyEmail from "./pages/VerifyEmail";
+import VerifyOTP  from "./pages/VerifyOTP";
 
 function Logout() {
   localStorage.clear();
@@ -22,11 +21,10 @@ function App() {
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/check-email" element={<CheckEmail />} />
-        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/verify-otp" element={<VerifyOTP />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>

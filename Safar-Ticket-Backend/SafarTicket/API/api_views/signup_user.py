@@ -1,14 +1,14 @@
+from ..utils.email_utils import send_otp_email
+from datetime import timedelta
+import hashlib
 import MySQLdb
 from rest_framework.views import APIView
 from rest_framework.response import Response
-import datetime
-import hashlib
 import re
-import random
 import json
 import redis
-from ..utils.email_utils import send_otp_email
-from datetime import timedelta
+from django.conf import settings
+import random
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
@@ -18,7 +18,7 @@ class SignupUserAPIView(APIView):
         if not re.search(r"[a-z]", password): return False
         if not re.search(r"[A-Z]", password): return False
         if not re.search(r"[0-9]", password): return False
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", password): return False
+        if not re.search(r"[!@#$%^&*(),.?:{}|<>]", password): return False
         return True
 
     def post(self, request):
@@ -27,12 +27,8 @@ class SignupUserAPIView(APIView):
         password = data.get('password')
 
         required_fields = ['first_name', 'last_name', 'email', 'phone_number', 'password']
-        errors = {}
-        for field in required_fields:
-            if not data.get(field):
-                errors[field] = f"{field.replace('_', ' ')} is required and cannot be empty."
-        if errors:
-            return Response({'errors': errors}, status=400)
+        if any(not data.get(field) for field in required_fields):
+            return Response({'error': 'All fields are required.'}, status=400)
 
         if not self._is_password_strong(password):
             return Response({'error': 'Password is not strong enough.'}, status=400)
@@ -48,25 +44,19 @@ class SignupUserAPIView(APIView):
                 return Response({'error': 'User with this email already exists'}, status=400)
 
             password_hash = hashlib.sha256(password.encode()).hexdigest()
+            data['password_hash'] = password_hash
+            user_data_to_store = data.copy()
+            del user_data_to_store['password'] 
             
-            temp_user_data = {
-                'first_name': data.get('first_name'),
-                'last_name': data.get('last_name'),
-                'email': email,
-                'phone_number': data.get('phone_number'),
-                'password_hash': password_hash,
-            }
-            
-            user_data_json = json.dumps(temp_user_data)
-            
+            user_data_json = json.dumps(user_data_to_store)
             otp = str(random.randint(100000, 999999))
             
-            redis_client.setex(f"temp_user:{email}", timedelta(minutes=15), user_data_json)
-            redis_client.setex(f"signup_otp:{email}", timedelta(minutes=15), otp)
-
+            redis_client.setex(f"temp_user:{email}", timedelta(minutes=20), user_data_json)
+            redis_client.setex(f"signup_otp:{email}", timedelta(minutes=5), otp)
+            
             send_otp_email(email, otp)
 
-            return Response({'message': 'OTP sent to your email for account verification.'}, status=200)
+            return Response({'message': 'OTP sent to your email.'}, status=200)
 
         except MySQLdb.Error as e:
             return Response({'error': f"Database error: {str(e)}"}, status=500)

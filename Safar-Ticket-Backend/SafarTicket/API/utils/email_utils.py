@@ -4,9 +4,6 @@ from django.conf import settings
 import smtplib
 from email.mime.text import MIMEText
 from django.conf import settings
-import datetime
-
-
 
 
 def send_otp_email(to_email, otp):
@@ -19,13 +16,18 @@ def send_otp_email(to_email, otp):
       <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; color: #333; padding: 20px; background-color: #F8F9FA;">
         <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 12px; padding: 40px; background-color: #FFFFFF;">
           <h1 style="color: #0D47A1; font-size: 28px;">SafarTicket Verification</h1>
-          <p style="font-size: 18px;">Thank you for registering! Use the code below to verify your email address.</p>
-          <p style="font-size: 36px; font-weight: bold; letter-spacing: 8px; margin: 30px 0; color: #0D47A1; background-color: #f0f5ff; padding: 20px; border-radius: 8px;">{otp}</p>
-          <p style="margin-bottom: 30px;">
+          <p style="font-size: 18px;">Thank you for registering! Please verify your email address.</p>
+          
+          <p style="margin-top: 30px; margin-bottom: 20px;">
             <a href="{verification_link}" target="_blank" style="text-decoration: none; background-color: #FFA726; color: white; padding: 15px 25px; border-radius: 8px; font-size: 16px; font-weight: bold;">
-              Or Verify by Clicking Here
+              Verify by Clicking Here
             </a>
           </p>
+          
+          <p style="font-size: 16px; color: #555;">Or, use the code below:</p>
+
+          <p style="font-size: 36px; font-weight: bold; letter-spacing: 8px; margin: 20px 0; color: #0D47A1; background-color: #f0f5ff; padding: 20px; border-radius: 8px;">{otp}</p>
+          
           <p style="font-size: 14px; color: #777;">This code will expire in 5 minutes.</p>
           <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;" />
           <p style="font-size: 12px; color: #aaa;">If you did not request this, please ignore this email.</p>
@@ -46,8 +48,6 @@ def send_otp_email(to_email, otp):
             server.send_message(msg)
     except Exception as e:
         print(f"Failed to send email: {e}")
-
-
 
 
 def send_payment_reminder_email(to_email, expiration_time, reservation_details):
