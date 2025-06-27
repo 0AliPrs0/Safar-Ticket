@@ -2,7 +2,7 @@ import React from 'react';
 
 const AlertIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>;
 
-function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, confirmText = "Confirm", loading = false }) {
+function ConfirmationModal({ isOpen, onClose, onConfirm, title, children, confirmText = "Confirm", loading = false }) {
     if (!isOpen) return null;
 
     return (
@@ -12,12 +12,16 @@ function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, confirm
                     <AlertIcon />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800">{title}</h3>
-                <p className="text-gray-600 mt-2 mb-6">{message}</p>
+                
+                <div className="text-gray-600 mt-2 mb-6 min-h-[80px]">
+                    {children}
+                </div>
+
                 <div className="flex gap-4">
                     <button onClick={onClose} className="w-full py-2 px-4 rounded-lg border border-gray-300 bg-white text-gray-700 font-semibold hover:bg-gray-50 transition-colors">
                         Cancel
                     </button>
-                    <button onClick={onConfirm} disabled={loading} className="w-full py-2 px-4 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors disabled:bg-red-300">
+                    <button onClick={onConfirm} disabled={loading || !children} className="w-full py-2 px-4 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors disabled:bg-red-300 disabled:cursor-not-allowed">
                         {loading ? 'Processing...' : confirmText}
                     </button>
                 </div>

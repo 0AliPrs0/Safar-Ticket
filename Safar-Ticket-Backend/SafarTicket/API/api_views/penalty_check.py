@@ -1,14 +1,7 @@
 import MySQLdb
-import redis 
 from rest_framework.views import APIView
 from rest_framework.response import Response
-import datetime
-from datetime import datetime, timedelta 
-
-
-redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
-
-
+from datetime import datetime, timedelta
 
 class PenaltyCheckAPIView(APIView):
     def post(self, request):
@@ -20,18 +13,18 @@ class PenaltyCheckAPIView(APIView):
         if not reservation_id:
             return Response({"error": "reservation_id is required"}, status=400)
 
+        conn = None
+        cursor = None
         try:
             conn = MySQLdb.connect(
-                host="db",
-                user="root",
-                password="Aliprs2005",
-                database="safarticket",
-                port=3306
+                host="db", user="root", password="Aliprs2005",
+                database="safarticket", port=3306,
+                cursorclass=MySQLdb.cursors.DictCursor
             )
             cursor = conn.cursor()
 
             cursor.execute("""
-                SELECT r.status, t.travel_id, tr.departure_time, tr.price
+                SELECT r.status, tr.departure_time, tr.price
                 FROM Reservation r
                 JOIN Ticket t ON r.ticket_id = t.ticket_id
                 JOIN Travel tr ON t.travel_id = tr.travel_id
@@ -42,14 +35,11 @@ class PenaltyCheckAPIView(APIView):
             if not result:
                 return Response({"error": "Reservation not found"}, status=404)
 
-            status, travel_id, departure_time, price = result
-
-            if status != "paid":
+            if result["status"] != "paid":
                 return Response({"error": "Only paid reservations have a penalty policy"}, status=400)
 
-            now = datetime.utcnow()
-            departure_dt = departure_time
-            remaining_time = departure_dt - now
+            now = datetime.now()
+            remaining_time = result["departure_time"] - now
 
             if remaining_time <= timedelta(hours=1):
                 penalty_percent = 90
@@ -58,17 +48,22 @@ class PenaltyCheckAPIView(APIView):
             else:
                 penalty_percent = 10
 
-            penalty_amount = round(price * penalty_percent / 100)
-
-            cursor.close()
-            conn.close()
+            penalty_amount = round(float(result["price"]) * penalty_percent / 100)
+            refund_amount = float(result["price"]) - penalty_amount
 
             return Response({
                 "reservation_id": reservation_id,
                 "penalty_percent": penalty_percent,
                 "penalty_amount": penalty_amount,
-                "refund_amount": price - penalty_amount
+                "refund_amount": refund_amount
             })
 
+        except MySQLdb.Error as e:
+            return Response({"error": f"Database error: {str(e)}"}, status=500)
         except Exception as e:
-            return Response({"error": str(e)}, status=500) 
+            return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
