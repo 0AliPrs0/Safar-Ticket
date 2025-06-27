@@ -16,6 +16,9 @@ from .api_views.ticket_reservation import UserReservationsAPIView, ReserveTicket
 from .api_views.penalty_check import PenaltyCheckAPIView
 from .api_views.token_views import RefreshTokenAPIView
 from .api_views.login_user import LoginAPIView
+from .api_views.company_list import TransportCompanyListView
+from .api_views.travel_options import TravelOptionsView
+
 
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
@@ -37,4 +40,6 @@ urlpatterns = [
     path('reservation/', UserReservationsAPIView.as_view()),
     path('check-penalty/', PenaltyCheckAPIView.as_view()),
     path('refresh-token/', RefreshTokenAPIView.as_view()),
+    path('companies/', TransportCompanyListView.as_view()),
+    path('travel-options/', TravelOptionsView.as_view()),
 ]
