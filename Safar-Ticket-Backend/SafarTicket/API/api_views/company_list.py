@@ -1,3 +1,4 @@
+import MySQLdb
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -18,7 +19,6 @@ class TransportCompanyListView(APIView):
             params = []
 
             if transport_type:
-                # 'plane' در دیتابیس شما معادل 'airplane' است
                 db_transport_type = 'airplane' if transport_type == 'plane' else transport_type
                 query += " WHERE transport_type = %s"
                 params.append(db_transport_type)
