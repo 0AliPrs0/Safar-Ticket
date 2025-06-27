@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import api from '../api';
-import SlideOutMenu from '../components/SlideOutMenu'; 
+import SlideOutMenu from '../components/SlideOutMenu';
 
 // --- Icon Components ---
 const PlaneIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 5.2 5.2c.4.4 1 .5 1.4.1l.5-.3c.4-.3.6-.7.5-1.2z"/></svg>;
@@ -12,7 +12,6 @@ const SwapIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height
 const FilterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
 const MenuIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
 
-// --- Header Component ---
 function Header({ onMenuClick }) {
     const navigate = useNavigate();
     return (
@@ -22,9 +21,7 @@ function Header({ onMenuClick }) {
                     <button onClick={onMenuClick} className="p-2 rounded-full hover:bg-gray-100">
                         <MenuIcon />
                     </button>
-                    <div className="text-2xl font-bold text-primary-blue cursor-pointer" onClick={() => navigate('/')}>
-                        ✈️ SafarTicket
-                    </div>
+                    <div className="text-2xl font-bold text-primary-blue cursor-pointer" onClick={() => navigate('/')}>✈️ SafarTicket</div>
                 </div>
                 <div className="flex items-center gap-4">
                     <button onClick={() => navigate('/profile')} className="font-semibold text-gray-600 hover:text-primary-blue transition-colors">My Account</button>
@@ -35,17 +32,10 @@ function Header({ onMenuClick }) {
     );
 }
 
-// --- Search Form Component ---
 function SearchForm({ tripType, setTripType, onSearch }) {
     const [searchParams, setSearchParams] = useState({
-        origin: null,
-        destination: null,
-        departureDate: '',
-        isRoundTrip: false,
-        company: '',
-        travelClass: '',
-        minPrice: '',
-        maxPrice: '',
+        origin: null, destination: null, departureDate: '', isRoundTrip: false,
+        company: '', travelClass: '', minPrice: '', maxPrice: '',
     });
     const [cities, setCities] = useState([]);
     const [companies, setCompanies] = useState([]);
@@ -58,23 +48,10 @@ function SearchForm({ tripType, setTripType, onSearch }) {
         api.get('/api/travel-options/').then(res => setTravelClasses(res.data.travel_classes)).catch(err => console.error("Error fetching travel options:", err));
     }, []);
 
-    const handleSwap = () => {
-        setSearchParams(prev => ({ ...prev, origin: prev.destination, destination: prev.origin }));
-    };
-
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setSearchParams(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-    };
-    
-    const handleSelectChange = (name, selectedOption) => {
-        setSearchParams(prev => ({ ...prev, [name]: selectedOption }));
-    };
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSearch({ ...searchParams, tripType });
-    };
+    const handleSwap = () => { setSearchParams(prev => ({ ...prev, origin: prev.destination, destination: prev.origin })); };
+    const handleChange = (e) => { const { name, value, type, checked } = e.target; setSearchParams(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value })); };
+    const handleSelectChange = (name, selectedOption) => { setSearchParams(prev => ({ ...prev, [name]: selectedOption })); };
+    const handleSubmit = (e) => { e.preventDefault(); onSearch({ ...searchParams, tripType }); };
 
     const TripTypeButton = ({ type, icon, label }) => ( <button type="button" onClick={() => setTripType(type)} className={`flex items-center gap-2 px-4 py-3 rounded-t-lg transition-all duration-200 border-b-4 ${tripType === type ? 'bg-white text-primary-blue border-accent-orange' : 'bg-transparent text-white/80 hover:bg-white/10 border-transparent'}`}>{icon}<span className="font-bold">{label}</span></button> );
     const customSelectStyles = { control: (provided) => ({ ...provided, minHeight: '60px', borderRadius: '0.5rem' }), menu: (provided) => ({...provided, zIndex: 10}) };
@@ -89,12 +66,12 @@ function SearchForm({ tripType, setTripType, onSearch }) {
             <div className="bg-white p-6 rounded-lg rounded-tl-none shadow-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                     <div className="relative md:col-span-8 flex items-center gap-4">
-                        <Select options={cities} required value={searchParams.origin} onChange={(opt) => handleSelectChange('origin', opt)} placeholder="Origin" isClearable isSearchable styles={customSelectStyles} className="w-full" />
+                        <Select options={cities} value={searchParams.origin} onChange={(opt) => handleSelectChange('origin', opt)} placeholder="Origin" isClearable isSearchable styles={customSelectStyles} className="w-full" />
                         <button onClick={handleSwap} type="button" className="flex-shrink-0 w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-primary-blue transition-all duration-200"><SwapIcon /></button>
-                        <Select options={cities} required value={searchParams.destination} onChange={(opt) => handleSelectChange('destination', opt)} placeholder="Destination" isClearable isSearchable styles={customSelectStyles} className="w-full" />
+                        <Select options={cities} value={searchParams.destination} onChange={(opt) => handleSelectChange('destination', opt)} placeholder="Destination" isClearable isSearchable styles={customSelectStyles} className="w-full" />
                     </div>
                     <div className="md:col-span-2">
-                        <input type="date" required name="departureDate" value={searchParams.departureDate} onChange={handleChange} className="w-full p-4 h-[60px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue focus:outline-none text-gray-500" />
+                        <input type="date" name="departureDate" value={searchParams.departureDate} onChange={handleChange} className="w-full p-4 h-[60px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue focus:outline-none text-gray-500" />
                     </div>
                     <div className="md:col-span-2 grid grid-cols-1"><button type="submit" className="w-full h-[60px] bg-accent-orange text-white rounded-lg text-lg font-bold hover:bg-opacity-90 transition-all duration-200 shadow-lg shadow-orange-500/30">Search</button></div>
                 </div>
@@ -104,15 +81,16 @@ function SearchForm({ tripType, setTripType, onSearch }) {
                 {showFilters && (
                     <div className="mt-6 pt-6 border-t border-gray-200">
                         <h3 className="text-lg font-semibold text-dark-text mb-4">Optional Filters</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                             <input type="number" name="minPrice" value={searchParams.minPrice} onChange={handleChange} placeholder="Min Price" className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue"/>
                             <input type="number" name="maxPrice" value={searchParams.maxPrice} onChange={handleChange} placeholder="Max Price" className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue"/>
-                            <select name="company" value={searchParams.company} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white"><option value="">All Companies</option>{companies.map(comp => <option key={comp} value={comp}>{comp}</option>)}</select>
-                            <select name="travelClass" value={searchParams.travelClass} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white"><option value="">All Classes</option>{travelClasses.map(cls => <option key={cls} value={cls}>{cls.charAt(0).toUpperCase() + cls.slice(1)}</option>)}</select>
-                            <div className="flex items-center justify-center p-3 border border-gray-300 rounded-lg bg-gray-50 h-[50px]">
-                                <input id="round-trip-checkbox" name="isRoundTrip" type="checkbox" checked={searchParams.isRoundTrip} onChange={handleChange} className="h-5 w-5 text-primary-blue rounded border-gray-300 focus:ring-secondary-blue" />
-                                <label htmlFor="round-trip-checkbox" className="ml-3 block text-sm text-gray-900 font-medium">Round Trip</label>
-                            </div>
+                            {/* تغییر اصلی اینجاست: شرط اضافه شد */}
+                            <select name="company" value={searchParams.company} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white"><option value="">All Companies</option>{Array.isArray(companies) && companies.map(comp => <option key={comp} value={comp}>{comp}</option>)}</select>
+                            <select name="travelClass" value={searchParams.travelClass} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white"><option value="">All Classes</option>{Array.isArray(travelClasses) && travelClasses.map(cls => <option key={cls} value={cls}>{cls.charAt(0).toUpperCase() + cls.slice(1)}</option>)}</select>
+                        </div>
+                        <div className="mt-4 flex items-center justify-start">
+                            <input id="round-trip-checkbox" name="isRoundTrip" type="checkbox" checked={searchParams.isRoundTrip} onChange={handleChange} className="h-5 w-5 text-primary-blue rounded border-gray-300 focus:ring-secondary-blue" />
+                            <label htmlFor="round-trip-checkbox" className="ml-3 block text-sm text-gray-900 font-medium">Round Trip</label>
                         </div>
                     </div>
                 )}
@@ -128,12 +106,11 @@ function Home() {
     const [error, setError] = useState(null);
     const [searched, setSearched] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [user, setUser] = useState({ first_name: 'Guest', last_name: '', email: '' }); // Default user
+    const [user, setUser] = useState({ first_name: 'Guest', last_name: '', email: '' });
 
-    // میتوانید اطلاعات کاربر را از یک API بخوانید
-    // useEffect(() => {
-    //   api.get('/api/profile/').then(res => setUser(res.data));
-    // }, []);
+    useEffect(() => {
+        api.get('/api/profile/').then(res => setUser(res.data)).catch(err => console.log("User not logged in"));
+    }, []);
 
     const handleSearch = async (params) => {
         setLoading(true);
