@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import MyBookings from "./pages/MyBookings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import VerifyOTP  from "./pages/VerifyOTP";
@@ -19,6 +20,7 @@ function App() {
       <Routes>
         <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+        <Route path="/bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
         
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/logout" element={<Logout />} />
