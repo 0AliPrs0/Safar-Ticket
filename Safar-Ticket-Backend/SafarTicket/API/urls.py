@@ -18,6 +18,7 @@ from .api_views.token_views import RefreshTokenAPIView
 from .api_views.login_user import LoginAPIView
 from .api_views.company_list import TransportCompanyListView
 from .api_views.travel_options import TravelOptionsView
+from .api_views.travel_detail import TravelDetailAPIView 
 
 
 urlpatterns = [
@@ -42,4 +43,5 @@ urlpatterns = [
     path('refresh-token/', RefreshTokenAPIView.as_view()),
     path('companies/', TransportCompanyListView.as_view()),
     path('travel-options/', TravelOptionsView.as_view()),
+    path('travel/<int:travel_id>/', TravelDetailAPIView.as_view()), 
 ]

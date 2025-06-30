@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import api from '../api';
 import SlideOutMenu from '../components/SlideOutMenu';
+import ExpandedTicket from '../components/ExpandedTicket'; 
+import LoadingIndicator from '../components/LoadingIndicator';
 
 const PlaneIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 5.2 5.2c.4.4 1 .5 1.4.1l.5-.3c.4-.3.6-.7.5-1.2z"/></svg>;
 const TrainIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 13.5l-1.5-1.5 1.5-1.5"/><path d="M21 13.5l1.5-1.5l-1.5-1.5"/><path d="M4.5 12h15"/><path d="M4.5 12l1.5 6.5-1.5 1.5h15l-1.5-1.5 1.5-6.5"/><path d="M4.5 12l1.5-6.5-1.5-1.5h15l-1.5 1.5l1.5 6.5"/></svg>;
@@ -118,6 +120,9 @@ function Home() {
     const [searched, setSearched] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [user, setUser] = useState({ first_name: 'Guest' });
+    const [selectedTicketId, setSelectedTicketId] = useState(null); 
+    const [expandedTicketDetails, setExpandedTicketDetails] = useState(null);
+    const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
     useEffect(() => {
         api.get('/api/profile/').then(res => setUser(res.data)).catch(err => console.log("User not logged in"));
@@ -128,6 +133,7 @@ function Home() {
         setError(null);
         setSearched(true);
         setSearchResults([]);
+        setSelectedTicketId(null);
 
         const searchData = {
             origin_city_name: params.origin?.value,
@@ -153,6 +159,35 @@ function Home() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleTicketSelect = async (travelId) => {
+        if (selectedTicketId === travelId) {
+            setSelectedTicketId(null);
+            setExpandedTicketDetails(null);
+            return;
+        }
+        
+        setIsDetailsLoading(true);
+        setSelectedTicketId(travelId);
+        setExpandedTicketDetails(null); 
+
+        try {
+            // فراخوانی API جدید و صحیح با استفاده از travelId
+            const res = await api.get(`/api/travel/${travelId}/`);
+            setExpandedTicketDetails(res.data);
+        } catch (err) {
+            setError("Could not load ticket details.");
+            console.error("Failed to fetch ticket details:", err);
+        } finally {
+            setIsDetailsLoading(false);
+        }
+    };
+
+    const handleReserve = (travelId) => {
+        console.log(`Navigating to reservation page for travel ID: ${travelId}`);
+        // در اینجا می‌توانید کاربر را به صفحه انتخاب صندلی و رزرو هدایت کنید
+        // navigate(`/reserve/${travelId}`);
     };
     
     return (
@@ -182,23 +217,31 @@ function Home() {
                     {error && <div className="text-center p-10 text-red-500"><p>{error}</p></div>}
                     {!loading && searched && searchResults.length === 0 && (
                         <div className="text-center p-10 bg-white rounded-lg shadow-md">
-                            <h3 className="text-2xl font-semibold text-[#212529]">No Tickets Found</h3>
+                            <h3 className="text-2xl font-semibold text-dark-text">No Tickets Found</h3>
                             <p className="text-gray-500 mt-2">We couldn't find any trips matching your search criteria. Please try different dates or locations.</p>
                         </div>
                     )}
                     {searchResults.length > 0 && (
                         <div className="space-y-4">
-                            <h2 className="text-2xl font-bold text-[#212529] mb-4">Available Tickets</h2>
+                            <h2 className="text-2xl font-bold text-dark-text mb-4">Available Tickets</h2>
                             {searchResults.map(ticket => (
-                                <div key={ticket.travel_id} className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center hover:shadow-xl transition-shadow">
-                                    <div>
-                                        <p className="font-bold text-lg text-[#0D47A1]">{ticket.transport_company_name}</p>
-                                        <p className="font-semibold">{ticket.departure_city_name} to {ticket.destination_city_name}</p>
-                                        <p className="text-sm text-gray-500">{new Date(ticket.departure_time).toLocaleString()}</p>
+                                <div key={ticket.travel_id}>
+                                    <div className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center hover:shadow-xl transition-shadow cursor-pointer" onClick={() => handleTicketSelect(ticket.travel_id)}>
+                                        <div>
+                                            <p className="font-bold text-lg text-primary-blue">{ticket.transport_company_name}</p>
+                                            <p className="font-semibold">{ticket.departure_city_name} to {ticket.destination_city_name}</p>
+                                            <p className="text-sm text-gray-500">{new Date(ticket.departure_time).toLocaleString()}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="text-xl font-bold text-dark-text">${ticket.price}</p>
+                                            <button className="mt-2 bg-accent-orange text-white px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Details</button>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-xl font-bold text-[#212529]">${ticket.price}</p>
-                                        <button className="mt-2 bg-[#FFA726] text-white px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Select</button>
+                                    <div className={`transition-all duration-500 ease-in-out overflow-hidden ${selectedTicketId === ticket.travel_id ? 'max-h-screen' : 'max-h-0'}`}>
+                                        {isDetailsLoading && selectedTicketId === ticket.travel_id && <div className="p-4 text-center"><LoadingIndicator /></div>}
+                                        {!isDetailsLoading && expandedTicketDetails && selectedTicketId === ticket.travel_id && (
+                                            <ExpandedTicket ticket={expandedTicketDetails} onReserve={handleReserve} />
+                                        )}
                                     </div>
                                 </div>
                             ))}
