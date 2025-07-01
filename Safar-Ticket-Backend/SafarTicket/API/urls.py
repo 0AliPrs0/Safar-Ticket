@@ -19,7 +19,8 @@ from .api_views.login_user import LoginAPIView
 from .api_views.company_list import TransportCompanyListView
 from .api_views.travel_options import TravelOptionsView
 from .api_views.travel_detail import TravelDetailAPIView 
-
+from .api_views.upload_profile_image import UploadProfileImageAPIView
+from .api_views.charge_wallet import ChargeWalletAPIView
 
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
@@ -44,4 +45,6 @@ urlpatterns = [
     path('companies/', TransportCompanyListView.as_view()),
     path('travel-options/', TravelOptionsView.as_view()),
     path('travel/<int:travel_id>/', TravelDetailAPIView.as_view()), 
+    path('upload-profile-image/', UploadProfileImageAPIView.as_view()),
+    path('charge-wallet/', ChargeWalletAPIView.as_view(), name='charge-wallet'),
 ]

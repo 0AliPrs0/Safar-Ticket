@@ -38,6 +38,7 @@
 
     ALTER TABLE User MODIFY COLUMN city_id BIGINT NULL;
 
+    ALTER TABLE User ADD COLUMN profile_image_url VARCHAR(255) NULL;
 
     CREATE TABLE Terminal (
     terminal_id BIGINT PRIMARY KEY AUTO_INCREMENT,
