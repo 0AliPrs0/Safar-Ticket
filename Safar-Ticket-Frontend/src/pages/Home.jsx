@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Select from 'react-select';
 import api from '../api';
+import { ACCESS_TOKEN } from '../constants';
 import SlideOutMenu from '../components/SlideOutMenu';
 import ExpandedTicket from '../components/ExpandedTicket';
 import LoadingIndicator from '../components/LoadingIndicator';
+import planeImage from '../assets/pictures/plane.jpg';
+import trainImage from '../assets/pictures/train.jpg';
+import busImage from '../assets/pictures/bus.jpg';
 
 const PlaneIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 5.2 5.2c.4.4 1 .5 1.4.1l.5-.3c.4-.3.6-.7.5-1.2z"/></svg>;
 const TrainIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 13.5l-1.5-1.5 1.5-1.5"/><path d="M21 13.5l1.5-1.5l-1.5-1.5"/><path d="M4.5 12h15"/><path d="M4.5 12l1.5 6.5-1.5 1.5h15l-1.5-1.5 1.5-6.5"/><path d="M4.5 12l1.5-6.5-1.5-1.5h15l-1.5 1.5l1.5 6.5"/></svg>;
@@ -14,7 +18,6 @@ const FilterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" heig
 const MenuIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
 const WalletIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>;
 const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
-const UserCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
 
 function ChargeWalletModal({ isOpen, onClose, onChargeSuccess }) {
     const [amount, setAmount] = useState('');
@@ -63,28 +66,37 @@ function ChargeWalletModal({ isOpen, onClose, onChargeSuccess }) {
     );
 }
 
-function Header({ onMenuClick, user, onChargeClick }) {
+function Header({ isAuthenticated, onMenuClick, user, onChargeClick }) {
     const navigate = useNavigate();
     return (
         <header className="bg-white/80 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-30">
             <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
                 <div className="flex items-center gap-4">
-                    <button onClick={onMenuClick} className="p-2 rounded-full hover:bg-gray-100"><MenuIcon /></button>
+                    {isAuthenticated && <button onClick={onMenuClick} className="p-2 rounded-full hover:bg-gray-100"><MenuIcon /></button>}
                     <div className="text-2xl font-bold text-[#0D47A1] cursor-pointer" onClick={() => navigate('/')}>✈️ SafarTicket</div>
                 </div>
                 <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-100 border border-gray-200">
-                        <WalletIcon />
-                        <span className="font-bold text-[#0D47A1]">${user.wallet?.toLocaleString() || '0'}</span>
-                        <button onClick={onChargeClick} className="ml-2 bg-[#0D47A1] text-white text-xs font-bold w-6 h-6 rounded-full hover:bg-opacity-90 transition-transform hover:scale-110">+</button>
-                    </div>
-                    <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-secondary-blue transition-all duration-200" title="My Account">
-                        <img
-                            src={user.profile_image_url || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=0D47A1&color=fff&size=128`}
-                            alt="User Profile"
-                            className="w-full h-full object-cover"
-                        />
-                    </button>
+                    {isAuthenticated ? (
+                        <>
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-100 border border-gray-200">
+                                <WalletIcon />
+                                <span className="font-bold text-[#0D47A1]">${user?.wallet?.toLocaleString() || '0'}</span>
+                                <button onClick={onChargeClick} className="ml-2 bg-[#0D47A1] text-white text-xs font-bold w-6 h-6 rounded-full hover:bg-opacity-90 transition-transform hover:scale-110">+</button>
+                            </div>
+                            <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-secondary-blue transition-all duration-200" title="My Account">
+                                <img
+                                    src={user?.profile_image_url || `https://ui-avatars.com/api/?name=${user?.first_name}+${user?.last_name}&background=0D47A1&color=fff&size=128`}
+                                    alt="User Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button onClick={() => navigate('/login')} className="font-semibold text-gray-700 hover:text-[#0D47A1] transition-colors">Login</button>
+                            <button onClick={() => navigate('/register')} className="bg-[#0D47A1] text-white px-5 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Register</button>
+                        </>
+                    )}
                 </div>
             </nav>
         </header>
@@ -170,7 +182,15 @@ function SearchForm({ tripType, setTripType, onSearch }) {
     );
 }
 
+const headerImages = {
+    plane: planeImage,
+    train: trainImage,
+    bus: busImage,
+};
+
 function Home() {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [tripType, setTripType] = useState('plane');
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -181,19 +201,27 @@ function Home() {
     const [expandedTicketDetails, setExpandedTicketDetails] = useState(null);
     const [isDetailsLoading, setIsDetailsLoading] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-    const [user, setUser] = useState({ first_name: 'Guest', last_name: '', wallet: 0, profile_image_url: '' });
-
-    const fetchUser = async () => {
-        try {
-            const res = await api.get('/api/profile/');
-            setUser(res.data);
-        } catch(err) {
-            console.log("User not logged in or failed to fetch profile");
-        }
-    };
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [user, setUser] = useState(null);
 
     useEffect(() => {
-        fetchUser();
+        const checkAuthAndFetchUser = async () => {
+            const token = localStorage.getItem(ACCESS_TOKEN);
+            if (!token) {
+                setIsAuthenticated(false);
+                setUser(null);
+                return;
+            }
+            try {
+                const res = await api.get('/api/profile/');
+                setUser(res.data);
+                setIsAuthenticated(true);
+            } catch(err) {
+                setIsAuthenticated(false);
+                setUser(null);
+            }
+        };
+        checkAuthAndFetchUser();
     }, []);
 
     const handleSearch = async (params) => {
@@ -247,26 +275,35 @@ function Home() {
     };
 
     const handleReserve = (travelId) => {
-        console.log(`Navigating to reservation page for travel ID: ${travelId}`);
+        if (!isAuthenticated) {
+            const destinationPath = `/reserve/${travelId}`;
+            navigate('/login', { state: { from: { pathname: destinationPath } } });
+            return;
+        }
+        navigate(`/reserve/${travelId}`);
     };
     
     return (
         <div className="min-h-screen bg-[#F8F9FA]">
-            <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} />
-            <Header onMenuClick={() => setIsMenuOpen(true)} user={user} onChargeClick={() => setIsWalletModalOpen(true)} />
-            <ChargeWalletModal isOpen={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} onChargeSuccess={(newBalance) => setUser(prev => ({ ...prev, wallet: newBalance }))} />
+            {isAuthenticated && user && <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} />}
+            <Header isAuthenticated={isAuthenticated} onMenuClick={() => setIsMenuOpen(true)} user={user} onChargeClick={() => setIsWalletModalOpen(true)} />
+            {isAuthenticated && <ChargeWalletModal isOpen={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} onChargeSuccess={(newBalance) => setUser(prev => ({ ...prev, wallet: newBalance }))} />}
+            
             <main>
-                <div className="relative h-[60vh] flex items-center justify-center pt-20 overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#0D47A1] to-[#42A5F5]" style={{clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0 100%)'}}/>
-                    <div className="absolute inset-0 z-0">
-                        <PlaneIcon className={`absolute -bottom-1/4 -left-1/4 w-1/2 h-1/2 text-white/5 transition-opacity duration-700 ease-in-out ${tripType === 'plane' ? 'opacity-100' : 'opacity-0'}`}/>
-                        <TrainIcon className={`absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 text-white/5 transition-opacity duration-700 ease-in-out ${tripType === 'train' ? 'opacity-100' : 'opacity-0'}`}/>
-                        <BusIcon className={`absolute -top-1/4 -right-1/4 w-1/2 h-1/2 text-white/5 transition-opacity duration-700 ease-in-out ${tripType === 'bus' ? 'opacity-100' : 'opacity-0'}`}/>
-                    </div>
+                <div className="relative h-[60vh] flex items-center justify-center pt-20 overflow-hidden bg-gray-800">
+                    {Object.entries(headerImages).map(([type, src]) => (
+                        <img 
+                            key={type}
+                            src={src} 
+                            alt={`${type} background`}
+                            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${tripType === type ? 'opacity-100' : 'opacity-0'}`}
+                        />
+                    ))}
+                    {/* <div className="absolute inset-0 bg-gradient-to-br from-[#0D47A1]/80 to-[#42A5F5]/70" style={{clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0 100%)'}}/>
                     <div className="container mx-auto px-6 text-center z-10">
-                        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4">Where to next?</h1>
-                        <p className="text-xl text-white/80">Book your next trip with ease and confidence.</p>
-                    </div>
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg">Where to next?</h1>
+                        <p className="text-xl text-white/90 drop-shadow-md">Book your next trip with ease and confidence.</p>
+                    </div> */}
                 </div>
                 
                 <div className="container mx-auto px-6 -mt-32 sm:-mt-24 z-20 relative">

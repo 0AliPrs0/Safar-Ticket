@@ -7,7 +7,8 @@ import Profile from "./pages/Profile";
 import MyBookings from "./pages/MyBookings";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
-import VerifyOTP  from "./pages/VerifyOTP";
+import VerifyOTP from "./pages/VerifyOTP";
+import ReservationPage from "./pages/ReservationPage";
 
 function Logout() {
   localStorage.clear();
@@ -18,9 +19,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+        <Route path="/" element={<Home />} />
+
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+        <Route path="/reserve/:travelId" element={<ProtectedRoute><ReservationPage /></ProtectedRoute>} />
         
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/logout" element={<Logout />} />

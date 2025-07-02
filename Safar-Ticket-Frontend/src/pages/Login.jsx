@@ -1,6 +1,6 @@
 import { useState } from "react";
-import api from "../api";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import api from "../api";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
 import LoadingIndicator from "../components/LoadingIndicator";
 import AuthFormContainer from "../components/AuthFormContainer";
@@ -17,6 +17,7 @@ function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const from = location.state?.from?.pathname || "/";
   const successMessage = location.state?.message;
 
   const handleSubmit = async (e) => {
@@ -27,7 +28,7 @@ function Login() {
       const res = await api.post("/api/login/", { username, password });
       localStorage.setItem(ACCESS_TOKEN, res.data.access);
       localStorage.setItem(REFRESH_TOKEN, res.data.refresh);
-      navigate("/");
+      navigate(from, { replace: true });
     } catch (error) {
       setError(error.response?.data?.detail || error.response?.data?.error || "Invalid email or password.");
     } finally {
