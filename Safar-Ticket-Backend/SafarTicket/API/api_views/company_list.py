@@ -4,9 +4,6 @@ from rest_framework.response import Response
 
 class TransportCompanyListView(APIView):
     def get(self, request):
-        user_info = getattr(request, 'user_info', None)
-        if not user_info:
-            return Response({"error": "Authentication credentials were not provided."}, status=401)
         
         transport_type = request.query_params.get('transport_type', None)
 

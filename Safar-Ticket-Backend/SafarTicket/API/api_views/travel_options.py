@@ -4,9 +4,6 @@ from rest_framework.response import Response
 
 class TravelOptionsView(APIView):
     def get(self, request):
-        user_info = getattr(request, 'user_info', None)
-        if not user_info:
-            return Response({"error": "Authentication credentials were not provided."}, status=401)
             
         transport_type = request.query_params.get('transport_type', 'plane')
         options = []
@@ -16,10 +13,9 @@ class TravelOptionsView(APIView):
             cursor = conn.cursor()
 
             if transport_type == 'plane':
-                # Querying the database is more robust than hardcoding
                 cursor.execute("SELECT DISTINCT travel_class FROM Travel WHERE transport_type = 'plane' AND travel_class IS NOT NULL")
                 options = [row[0] for row in cursor.fetchall()]
-                # Fallback in case no plane tickets exist in the DB yet
+
                 if not options:
                     options = ['economy', 'business', 'VIP']
                 option_type = 'travel_class'

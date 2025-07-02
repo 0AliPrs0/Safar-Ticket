@@ -10,9 +10,6 @@ redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
 class SearchTicketsAPIView(APIView):
     def post(self, request):
-        user_info = getattr(request, 'user_info', None)
-        if not user_info:
-            return Response({"error": "Authentication credentials were not provided."}, status=401)
 
         data = request.data
         origin_city_name = data.get('origin_city_name')

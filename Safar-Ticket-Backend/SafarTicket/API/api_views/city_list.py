@@ -8,9 +8,6 @@ redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
 class CityListView(APIView):
     def get(self, request):
-        user_info = getattr(request, 'user_info', None)
-        if not user_info:
-            return JsonResponse({"error": "Authentication credentials were not provided."}, status=401)
 
         try:
             db = MySQLdb.connect(
