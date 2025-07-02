@@ -73,16 +73,16 @@ services:
       - DB_PORT=3306
 
   frontend:
-    build: ./Safar-Ticket-Frontend
+    build:
+      context: ./Safar-Ticket-Frontend
+      dockerfile: Dockerfile.dev
     ports:
-      - "3000:80"
+      - "3000:5173" 
+    volumes:
+      - ./Safar-Ticket-Frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
-    environment:
-      - REACT_APP_API_URL=http://localhost:8000
-    dns:
-      - 8.8.8.8
-      - 1.1.1.1
 
 volumes:
   db_data:

@@ -19,7 +19,7 @@ def generate_refresh_token(user_id):
     payload = {
         'token_type': 'refresh',
         'user_id': user_id,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=6000), 
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=18000), 
         'iat': datetime.datetime.utcnow()
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')

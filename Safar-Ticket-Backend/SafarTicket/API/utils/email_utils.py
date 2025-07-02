@@ -8,7 +8,7 @@ from django.conf import settings
 
 def send_otp_email(to_email, otp):
     subject = "Your SafarTicket Verification Code"
-    frontend_url = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:5173')
+    frontend_url = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:3000')
     verification_link = f"{frontend_url}/verify-otp?otp={otp}&email={to_email}"
 
     body = f"""
