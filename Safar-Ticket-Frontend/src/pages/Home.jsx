@@ -14,7 +14,7 @@ const FilterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" heig
 const MenuIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
 const WalletIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>;
 const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
-const LogoutIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>;
+const UserCircleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
 
 function ChargeWalletModal({ isOpen, onClose, onChargeSuccess }) {
     const [amount, setAmount] = useState('');
@@ -47,7 +47,12 @@ function ChargeWalletModal({ isOpen, onClose, onChargeSuccess }) {
                 </div>
                 <form onSubmit={handleSubmit}>
                     <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount</label>
-                    <input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="e.g., 500" className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none" required min="1"/>
+                    <input
+                        type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)}
+                        placeholder="e.g., 500"
+                        className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none"
+                        required min="1"
+                    />
                     {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                     <button type="submit" disabled={loading} className="mt-6 w-full bg-[#FFA726] text-white py-3 rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-all duration-200 disabled:bg-gray-400">
                         {loading ? 'Processing...' : 'Add to Wallet'}
@@ -62,20 +67,23 @@ function Header({ onMenuClick, user, onChargeClick }) {
     const navigate = useNavigate();
     return (
         <header className="bg-white/80 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-30">
-            <nav className="container mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                    <button onClick={onMenuClick} className="p-2 rounded-full text-gray-600 hover:bg-gray-100 hover:text-[#0D47A1] transition-colors"><MenuIcon /></button>
-                    <div className="text-2xl font-bold text-[#0D47A1] cursor-pointer" onClick={() => navigate('/')}>SafarTicket</div>
+            <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
+                <div className="flex items-center gap-4">
+                    <button onClick={onMenuClick} className="p-2 rounded-full hover:bg-gray-100"><MenuIcon /></button>
+                    <div className="text-2xl font-bold text-[#0D47A1] cursor-pointer" onClick={() => navigate('/')}>✈️ SafarTicket</div>
                 </div>
-                <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="hidden sm:flex items-center gap-2 p-2 rounded-lg bg-gray-100 border border-gray-200">
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-100 border border-gray-200">
                         <WalletIcon />
                         <span className="font-bold text-[#0D47A1]">${user.wallet?.toLocaleString() || '0'}</span>
                         <button onClick={onChargeClick} className="ml-2 bg-[#0D47A1] text-white text-xs font-bold w-6 h-6 rounded-full hover:bg-opacity-90 transition-transform hover:scale-110">+</button>
                     </div>
-                    <button onClick={() => navigate('/logout')} className="flex items-center gap-2 bg-red-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md hover:shadow-lg">
-                        <LogoutIcon />
-                        <span className="hidden sm:block">Logout</span>
+                    <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-secondary-blue transition-all duration-200" title="My Account">
+                        <img
+                            src={user.profile_image_url || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=0D47A1&color=fff&size=128`}
+                            alt="User Profile"
+                            className="w-full h-full object-cover"
+                        />
                     </button>
                 </div>
             </nav>
@@ -109,11 +117,12 @@ function SearchForm({ tripType, setTripType, onSearch }) {
                 setTravelOptions({ type: 'travel_class', options: [] });
             });
     }, [tripType]);
-    
+
     const handleSwap = () => { setSearchParams(prev => ({ ...prev, origin: prev.destination, destination: prev.origin })); };
     const handleChange = (e) => { const { name, value, type, checked } = e.target; setSearchParams(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value })); };
     const handleSelectChange = (name, selectedOption) => { setSearchParams(prev => ({ ...prev, [name]: selectedOption })); };
     const handleSubmit = (e) => { e.preventDefault(); onSearch({ ...searchParams, tripType, travelOptionType: travelOptions.type }); };
+
     const getTravelOptionLabel = () => {
         switch (travelOptions.type) {
             case 'travel_class': return 'Class';
@@ -122,6 +131,7 @@ function SearchForm({ tripType, setTripType, onSearch }) {
             default: return 'Option';
         }
     };
+    
     const TripTypeButton = ({ type, icon, label }) => ( <button type="button" onClick={() => setTripType(type)} className={`flex items-center gap-2 px-4 py-3 rounded-t-lg transition-all duration-200 border-b-4 ${tripType === type ? 'bg-white text-[#0D47A1] border-[#FFA726]' : 'bg-transparent text-white/80 hover:bg-white/10 border-transparent'}`}>{icon}<span className="font-bold">{label}</span></button> );
     const customSelectStyles = { control: (provided) => ({ ...provided, minHeight: '60px', borderRadius: '0.5rem' }), menu: (provided) => ({...provided, zIndex: 10}) };
 
@@ -171,7 +181,7 @@ function Home() {
     const [expandedTicketDetails, setExpandedTicketDetails] = useState(null);
     const [isDetailsLoading, setIsDetailsLoading] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-    const [user, setUser] = useState({ first_name: 'Guest', wallet: 0, profile_image_url: '' });
+    const [user, setUser] = useState({ first_name: 'Guest', last_name: '', wallet: 0, profile_image_url: '' });
 
     const fetchUser = async () => {
         try {
@@ -192,7 +202,6 @@ function Home() {
         setSearched(true);
         setSearchResults([]);
         setSelectedTicketId(null);
-
         const searchData = {
             origin_city_name: params.origin?.value,
             destination_city_name: params.destination?.value,
@@ -203,11 +212,9 @@ function Home() {
             min_price: params.minPrice,
             max_price: params.maxPrice,
         };
-        
         if (params.travelOptionValue) {
             searchData[params.travelOptionType] = params.travelOptionValue;
         }
-
         try {
             const res = await api.post('/api/search-tickets/', searchData);
             setSearchResults(res.data);
@@ -225,11 +232,9 @@ function Home() {
             setExpandedTicketDetails(null);
             return;
         }
-        
         setIsDetailsLoading(true);
         setSelectedTicketId(travelId);
         setExpandedTicketDetails(null); 
-
         try {
             const res = await api.get(`/api/travel/${travelId}/`);
             setExpandedTicketDetails(res.data);
@@ -250,7 +255,6 @@ function Home() {
             <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} />
             <Header onMenuClick={() => setIsMenuOpen(true)} user={user} onChargeClick={() => setIsWalletModalOpen(true)} />
             <ChargeWalletModal isOpen={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} onChargeSuccess={(newBalance) => setUser(prev => ({ ...prev, wallet: newBalance }))} />
-            
             <main>
                 <div className="relative h-[60vh] flex items-center justify-center pt-20 overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-[#0D47A1] to-[#42A5F5]" style={{clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0 100%)'}}/>
@@ -270,28 +274,28 @@ function Home() {
                 </div>
                 
                 <div className="container mx-auto px-6 mt-12 mb-16">
-                    {loading && <div className="flex justify-center p-10"><LoadingIndicator /></div>}
+                    {loading && <div className="text-center p-10"><LoadingIndicator/></div>}
                     {error && <div className="text-center p-10 text-red-500"><p>{error}</p></div>}
                     {!loading && searched && searchResults.length === 0 && (
                         <div className="text-center p-10 bg-white rounded-lg shadow-md">
-                            <h3 className="text-2xl font-semibold text-gray-700">No Tickets Found</h3>
-                            <p className="text-gray-500 mt-2">We couldn't find any trips matching your search criteria. Please try different dates or locations.</p>
+                            <h3 className="text-2xl font-semibold text-[#212529]">No Tickets Found</h3>
+                            <p className="text-gray-500 mt-2">We couldn't find any trips matching your search criteria.</p>
                         </div>
                     )}
                     {searchResults.length > 0 && (
                         <div className="space-y-4">
-                            <h2 className="text-2xl font-bold text-gray-800 mb-4">Available Tickets</h2>
+                            <h2 className="text-2xl font-bold text-dark-text mb-4">Available Tickets</h2>
                             {searchResults.map(ticket => (
                                 <div key={ticket.travel_id}>
                                     <div className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center hover:shadow-xl transition-shadow cursor-pointer" onClick={() => handleTicketSelect(ticket.travel_id)}>
                                         <div>
-                                            <p className="font-bold text-lg text-[#0D47A1]">{ticket.transport_company_name}</p>
+                                            <p className="font-bold text-lg text-primary-blue">{ticket.transport_company_name}</p>
                                             <p className="font-semibold">{ticket.departure_city_name} to {ticket.destination_city_name}</p>
                                             <p className="text-sm text-gray-500">{new Date(ticket.departure_time).toLocaleString()}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-xl font-bold text-gray-800">${ticket.price}</p>
-                                            <button className="mt-2 bg-[#FFA726] text-white px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Details</button>
+                                            <p className="text-xl font-bold text-dark-text">${ticket.price}</p>
+                                            <button className="mt-2 bg-accent-orange text-white px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Details</button>
                                         </div>
                                     </div>
                                     <div className={`transition-all duration-500 ease-in-out overflow-hidden ${selectedTicketId === ticket.travel_id ? 'max-h-screen' : 'max-h-0'}`}>
