@@ -21,6 +21,7 @@ from .api_views.travel_options import TravelOptionsView
 from .api_views.travel_detail import TravelDetailAPIView 
 from .api_views.upload_profile_image import UploadProfileImageAPIView
 from .api_views.charge_wallet import ChargeWalletAPIView
+from .api_views.seat_list import SeatListAPIView
 
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
@@ -47,4 +48,5 @@ urlpatterns = [
     path('travel/<int:travel_id>/', TravelDetailAPIView.as_view()), 
     path('upload-profile-image/', UploadProfileImageAPIView.as_view()),
     path('charge-wallet/', ChargeWalletAPIView.as_view(), name='charge-wallet'),
+    path('travel/<int:travel_id>/seats/', SeatListAPIView.as_view()),
 ]
