@@ -22,7 +22,6 @@ class SeatListAPIView(APIView):
 
             capacity = travel_info['total_capacity']
 
-
             cursor.execute("""
                 SELECT t.seat_number 
                 FROM Reservation r

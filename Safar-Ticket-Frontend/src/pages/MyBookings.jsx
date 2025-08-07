@@ -4,6 +4,7 @@ import api from '../api';
 import SlideOutMenu from '../components/SlideOutMenu';
 import ConfirmationModal from '../components/ConfirmationModal';
 import LoadingIndicator from '../components/LoadingIndicator';
+import Notification from '../components/Notification';
 
 // --- Icons ---
 const TicketIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>;
@@ -45,8 +46,10 @@ function Header({ onMenuClick, user }) {
 }
 
 const BookingCard = ({ booking, onCancel, onPay, onRebook, isProcessing }) => {
-    const departureDate = new Date(booking.departure_time);
-    const expirationDate = new Date(booking.expiration_time);
+    //  اصلاح کلیدی: با اضافه کردن 'Z' به انتهای رشته زمان، به جاوااسکریپت می‌گوییم که این زمان UTC است
+    const departureDate = new Date(booking.departure_time.endsWith('Z') ? booking.departure_time : booking.departure_time + 'Z');
+    const expirationDate = new Date(booking.expiration_time.endsWith('Z') ? booking.expiration_time : booking.expiration_time + 'Z');
+    
     const isPast = departureDate < new Date();
     const isExpired = expirationDate < new Date();
 
@@ -97,7 +100,7 @@ const BookingCard = ({ booking, onCancel, onPay, onRebook, isProcessing }) => {
                         </button>
                     )}
                     {isRebookable && (
-                         <button onClick={() => onRebook(booking)} className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm disabled:bg-blue-300" disabled={isProcessing}>
+                         <button onClick={() => onRebook(booking.booking_id)} className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm disabled:bg-blue-300" disabled={isProcessing}>
                             {isProcessing ? <LoadingIndicator small /> : <RefreshCwIcon />}
                             <span>{isProcessing ? "Re-booking..." : "Re-book"}</span>
                         </button>
@@ -111,12 +114,12 @@ const BookingCard = ({ booking, onCancel, onPay, onRebook, isProcessing }) => {
 function MyBookings() {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [user, setUser] = useState({ first_name: 'Guest' });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [processingId, setProcessingId] = useState(null);
     const [penaltyInfo, setPenaltyInfo] = useState(null);
+    const [notification, setNotification] = useState({ message: '', type: '' });
     const navigate = useNavigate();
 
     const fetchBookings = async () => {
@@ -124,7 +127,7 @@ function MyBookings() {
             const res = await api.get('/api/user-booking/');
             setBookings(res.data);
         } catch (err) {
-             setError("Failed to fetch bookings. Please try again later.");
+            setNotification({ message: "Failed to fetch bookings. Please try again later.", type: 'error' });
         }
     };
 
@@ -136,7 +139,7 @@ function MyBookings() {
                 setUser(userRes.data);
                 await fetchBookings();
             } catch (err) {
-                 setError("Failed to load your data. Please refresh the page.");
+                 setNotification({ message: "Failed to load your data. Please refresh the page.", type: 'error' });
             } finally {
                 setLoading(false);
             }
@@ -152,7 +155,7 @@ function MyBookings() {
             setPenaltyInfo(res.data);
             setIsModalOpen(true);
         } catch (err) {
-            alert(err.response?.data?.error || "Could not retrieve cancellation details.");
+            setNotification({ message: err.response?.data?.error || "Could not retrieve cancellation details.", type: 'error' });
         } finally {
             setProcessingId(null);
         }
@@ -164,8 +167,9 @@ function MyBookings() {
             await api.post('/api/cancel-ticket/', { reservation_id: penaltyInfo.reservation_id });
             await fetchBookings();
             setIsModalOpen(false);
+            setNotification({ message: "Booking cancelled successfully.", type: 'success' });
         } catch (err) {
-            alert(err.response?.data?.error || "Failed to cancel the ticket.");
+            setNotification({ message: err.response?.data?.error || "Failed to cancel the ticket.", type: 'error' });
         } finally {
             setProcessingId(null);
             setPenaltyInfo(null);
@@ -176,16 +180,23 @@ function MyBookings() {
         navigate(`/payment/${booking.booking_id}`, { state: { booking } });
     };
 
-    const handleRebook = async (booking) => {
-        setProcessingId(booking.booking_id);
+    const handleRebook = async (bookingId) => {
+        setProcessingId(bookingId);
         try {
-            await api.post('/api/reserve-ticket/', {
-                travel_id: booking.travel_id,
-                seat_number: booking.seat_number
+            const res = await api.post('/api/rebook-ticket/', {
+                reservation_id: bookingId
             });
-            await fetchBookings();
+            // --- اصلاح کلیدی: آپدیت کردن state به صورت دستی و فوری ---
+            setBookings(currentBookings => 
+                currentBookings.map(b => 
+                    b.booking_id === bookingId 
+                    ? { ...b, expiration_time: res.data.new_expiration_time, status: 'reserved' } 
+                    : b
+                )
+            );
+            setNotification({ message: "Seat re-booked successfully! Please proceed to payment.", type: 'success' });
         } catch (err) {
-            alert(err.response?.data?.error || "Failed to re-book. The seat might have been taken.");
+            setNotification({ message: err.response?.data?.error || "Failed to re-book. The seat might have been taken.", type: 'error' });
         } finally {
             setProcessingId(null);
         }
@@ -193,14 +204,17 @@ function MyBookings() {
 
     return (
         <div className="min-h-screen bg-[#F8F9FA]">
+            <Notification 
+                message={notification.message}
+                type={notification.type}
+                onClose={() => setNotification({ message: '', type: '' })}
+            />
             <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} />
             <Header onMenuClick={() => setIsMenuOpen(true)} user={user} />
             <main className="container mx-auto px-6 py-12 pt-24">
                 <h1 className="text-3xl font-bold text-[#0D47A1] mb-8">My Bookings</h1>
                 {loading ? (
                     <div className="text-center"><LoadingIndicator /></div>
-                ) : error ? (
-                    <div className="text-center p-10 text-red-500">{error}</div>
                 ) : bookings.length === 0 ? (
                     <div className="text-center p-10 bg-white rounded-lg shadow-md">
                         <TicketIcon />

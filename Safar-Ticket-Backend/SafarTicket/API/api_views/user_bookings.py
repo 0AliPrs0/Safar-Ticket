@@ -59,7 +59,6 @@ class UserBookingsAPIView(APIView):
                 if isinstance(booking.get('expiration_time'), datetime):
                     booking['expiration_time'] = booking['expiration_time'].isoformat()
 
-
             return Response(bookings)
 
         except MySQLdb.Error as e:
