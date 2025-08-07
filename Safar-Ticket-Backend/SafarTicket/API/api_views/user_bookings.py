@@ -27,6 +27,9 @@ class UserBookingsAPIView(APIView):
                 SELECT 
                     r.reservation_id AS booking_id,
                     r.status,
+                    r.expiration_time,
+                    t.travel_id,
+                    t.seat_number,
                     tr.price,
                     tr.departure_time,
                     tr.arrival_time,
@@ -53,6 +56,9 @@ class UserBookingsAPIView(APIView):
                     booking['departure_time'] = booking['departure_time'].isoformat()
                 if isinstance(booking.get('arrival_time'), datetime):
                     booking['arrival_time'] = booking['arrival_time'].isoformat()
+                if isinstance(booking.get('expiration_time'), datetime):
+                    booking['expiration_time'] = booking['expiration_time'].isoformat()
+
 
             return Response(bookings)
 
