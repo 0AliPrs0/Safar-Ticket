@@ -299,11 +299,6 @@ function Home() {
                             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${tripType === type ? 'opacity-100' : 'opacity-0'}`}
                         />
                     ))}
-                    {/* <div className="absolute inset-0 bg-gradient-to-br from-[#0D47A1]/80 to-[#42A5F5]/70" style={{clipPath: 'polygon(0 0, 100% 0, 100% 85%, 0 100%)'}}/>
-                    <div className="container mx-auto px-6 text-center z-10">
-                        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 drop-shadow-lg">Where to next?</h1>
-                        <p className="text-xl text-white/90 drop-shadow-md">Book your next trip with ease and confidence.</p>
-                    </div> */}
                 </div>
                 
                 <div className="container mx-auto px-6 -mt-32 sm:-mt-24 z-20 relative">
@@ -322,17 +317,26 @@ function Home() {
                     {searchResults.length > 0 && (
                         <div className="space-y-4">
                             <h2 className="text-2xl font-bold text-dark-text mb-4">Available Tickets</h2>
-                            {searchResults.map(ticket => (
+                            {searchResults.map(ticket => {
+                                const isPast = new Date(ticket.departure_time) < new Date();
+                                return (
                                 <div key={ticket.travel_id}>
-                                    <div className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center hover:shadow-xl transition-shadow cursor-pointer" onClick={() => handleTicketSelect(ticket.travel_id)}>
+                                    <div 
+                                        className={`bg-white p-4 rounded-lg shadow-md flex justify-between items-center transition-all duration-200 ${isPast ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-xl cursor-pointer'}`} 
+                                        onClick={() => !isPast && handleTicketSelect(ticket.travel_id)}
+                                    >
                                         <div>
                                             <p className="font-bold text-lg text-primary-blue">{ticket.transport_company_name}</p>
                                             <p className="font-semibold">{ticket.departure_city_name} to {ticket.destination_city_name}</p>
                                             <p className="text-sm text-gray-500">{new Date(ticket.departure_time).toLocaleString()}</p>
                                         </div>
-                                        <div className="text-right">
+                                        <div className="text-right flex flex-col items-end">
                                             <p className="text-xl font-bold text-dark-text">${ticket.price}</p>
-                                            <button className="mt-2 bg-accent-orange text-white px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Details</button>
+                                            {isPast ? (
+                                                <span className="mt-2 text-sm font-bold text-red-500 bg-red-100 px-3 py-1 rounded-full">Departed</span>
+                                            ) : (
+                                                <span className="mt-2 text-sm font-semibold text-primary-blue">View Details</span>
+                                            )}
                                         </div>
                                     </div>
                                     <div className={`transition-all duration-500 ease-in-out overflow-hidden ${selectedTicketId === ticket.travel_id ? 'max-h-screen' : 'max-h-0'}`}>
@@ -342,7 +346,7 @@ function Home() {
                                         )}
                                     </div>
                                 </div>
-                            ))}
+                            )})}
                         </div>
                     )}
                 </div>
