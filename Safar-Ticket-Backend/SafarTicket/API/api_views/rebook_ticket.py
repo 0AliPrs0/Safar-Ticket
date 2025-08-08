@@ -67,7 +67,7 @@ class RebookTicketAPIView(APIView):
 
             conn.commit()
 
-            # --- اصلاح کلیدی: ثبت اطلاعات رزرو جدید در Redis ---
+           
             try:
                 reservation_cache_data = {
                     "status": "reserved",
@@ -77,8 +77,16 @@ class RebookTicketAPIView(APIView):
                 }
                 redis_key = f"reservation_details:{reservation_id}"
                 redis_client.setex(redis_key, timedelta(minutes=10), json.dumps(reservation_cache_data))
+
+                email_details = {
+                    "reservation_id": reservation_id,
+                    "departure_city": travel_info['departure_city'],
+                    "destination_city": travel_info['destination_city'],
+                    "departure_time": travel_info['departure_time'].strftime('%Y-%m-%d %H:%M')
+                }
+                send_payment_reminder_email(user_email, expiration_time, email_details)
             except redis.exceptions.RedisError:
-                pass #  اگر ردیس در دسترس نبود، برنامه نباید کرش کند
+                pass 
 
             return Response({
                 "message": "Reservation has been successfully re-booked.",

@@ -63,7 +63,7 @@ TEMPLATES = [
     },
 ]
 
-FRONTEND_BASE_URL = 'http://localhost:5173'
+FRONTEND_BASE_URL = 'http://localhost:3000'
 
 WSGI_APPLICATION = 'SafarTicket.wsgi.application'
 

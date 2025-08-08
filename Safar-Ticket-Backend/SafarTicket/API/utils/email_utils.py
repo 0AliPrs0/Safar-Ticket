@@ -54,11 +54,9 @@ def send_otp_email(to_email, otp):
 def send_payment_reminder_email(to_email, expiration_time, reservation_details):
     subject = "Payment Reminder for Your SafarTicket Reservation"
     frontend_url = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:3000')
-    # --- اصلاح لینک ---
-    # لینک حالا به درستی به صفحه پرداخت فرانت‌اند با شناسه رزرو اشاره می‌کند
+
     payment_link = f"{frontend_url}/payment/{reservation_details.get('reservation_id')}"
     
-    # اضافه کردن ۳ ساعت و ۳۰ دقیقه به زمان انقضا برای نمایش به کاربر
     user_local_expiration_time = expiration_time + timedelta(hours=3, minutes=30)
     formatted_expiration_time = user_local_expiration_time.strftime('%H:%M on %Y-%m-%d')
 

@@ -22,9 +22,7 @@ function CreditCardForm({ onFormChange, isFormValid }) {
         let formattedValue = value;
 
         if (name === 'number') {
-            // فقط عدد قبول کن
             const numericValue = value.replace(/\D/g, '');
-            // 4 رقم 4 رقم با خط تیره جدا کن
             formattedValue = numericValue.match(/.{1,4}/g)?.join('-') || '';
         }
         
@@ -36,7 +34,6 @@ function CreditCardForm({ onFormChange, isFormValid }) {
         const newDetails = { ...cardDetails, [name]: formattedValue };
         setCardDetails(newDetails);
 
-        // Check validity and pass it to parent
         const isValid = newDetails.number.length === 19 && 
                         newDetails.expiry.length === 5 && 
                         newDetails.cvv.length >= 3 && 
@@ -106,17 +103,19 @@ function PaymentPage() {
             try {
                 const userRes = await api.get('/api/profile/');
                 setUser(userRes.data);
+
                 if (!booking) {
-                    setError("Booking details not found. Please go back and try again.");
+                    const bookingRes = await api.get(`/api/booking/${reservationId}/`);
+                    setBooking(bookingRes.data);
                 }
             } catch (err) {
-                setError("Failed to load necessary data.");
+                setError("Failed to load booking details. It might be expired or invalid.");
             } finally {
                 setLoading(false);
             }
         };
         fetchData();
-    }, [reservationId, booking]);
+    }, [reservationId]);
 
     const handlePayment = async () => {
         setIsPaying(true);
@@ -138,12 +137,12 @@ function PaymentPage() {
         return <div className="flex justify-center items-center h-screen"><LoadingIndicator /></div>;
     }
 
-    if (error && !booking) {
+    if (error || !booking) {
          return (
             <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center text-center p-4">
                 <div className="bg-white p-8 rounded-lg shadow-md">
                     <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
-                    <p className="text-gray-700">{error}</p>
+                    <p className="text-gray-700">{error || "Booking details not found."}</p>
                     <Link to="/bookings" className="mt-6 inline-block bg-primary-blue text-white px-6 py-2 rounded-lg font-semibold hover:bg-opacity-90">
                         Back to My Bookings
                     </Link>
