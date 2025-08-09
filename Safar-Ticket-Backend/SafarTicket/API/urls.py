@@ -24,6 +24,9 @@ from .api_views.charge_wallet import ChargeWalletAPIView
 from .api_views.seat_list import SeatListAPIView
 from .api_views.rebook_ticket import RebookTicketAPIView
 from .api_views.booking_detail import BookingDetailAPIView
+from .api_views.change_password import ChangePasswordAPIView
+from .api_views.password_reset import ForgotPasswordAPIView, ResetPasswordAPIView
+from .api_views.get_report_by_ticket import GetReportByTicketAPIView
 
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
@@ -53,4 +56,8 @@ urlpatterns = [
     path('travel/<int:travel_id>/seats/', SeatListAPIView.as_view()),
     path('rebook-ticket/', RebookTicketAPIView.as_view(), name='rebook-ticket'), 
     path('booking/<int:reservation_id>/', BookingDetailAPIView.as_view(), name='booking-detail'),
+    path('change-password/', ChangePasswordAPIView.as_view(), name='change-password'),
+    path('forgot-password/', ForgotPasswordAPIView.as_view(), name='forgot-password'),
+    path('reset-password/', ResetPasswordAPIView.as_view(), name='reset-password'),
+    path('report/<int:ticket_id>/', GetReportByTicketAPIView.as_view(), name='get-report-by-ticket'),
 ]

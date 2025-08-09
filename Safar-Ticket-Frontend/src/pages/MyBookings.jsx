@@ -5,6 +5,7 @@ import SlideOutMenu from '../components/SlideOutMenu';
 import ConfirmationModal from '../components/ConfirmationModal';
 import LoadingIndicator from '../components/LoadingIndicator';
 import Notification from '../components/Notification';
+import { ReportModal, ViewReportModal } from '../components/ReportModals';
 
 // --- Icons ---
 const TicketIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>;
@@ -13,6 +14,7 @@ const MenuIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-
 const WalletIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>;
 const CreditCardIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>;
 const RefreshCwIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 2v6h6"/><path d="M21 12A9 9 0 0 0 6 5.3L3 8"/><path d="M21 22v-6h-6"/><path d="M3 12a9 9 0 0 0 15 6.7l3-2.7"/></svg>;
+const ReportIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>;
 
 function Header({ onMenuClick, user }) {
     const navigate = useNavigate();
@@ -45,10 +47,9 @@ function Header({ onMenuClick, user }) {
     );
 }
 
-const BookingCard = ({ booking, onCancel, onPay, onRebook, isProcessing }) => {
-    //  اصلاح کلیدی: با اضافه کردن 'Z' به انتهای رشته زمان، به جاوااسکریپت می‌گوییم که این زمان UTC است
-    const departureDate = new Date(booking.departure_time.endsWith('Z') ? booking.departure_time : booking.departure_time + 'Z');
-    const expirationDate = new Date(booking.expiration_time.endsWith('Z') ? booking.expiration_time : booking.expiration_time + 'Z');
+const BookingCard = ({ booking, onCancel, onPay, onRebook, onReport, isProcessing }) => {
+    const departureDate = new Date(booking.departure_time);
+    const expirationDate = new Date(booking.expiration_time);
     
     const isPast = departureDate < new Date();
     const isExpired = expirationDate < new Date();
@@ -85,28 +86,30 @@ const BookingCard = ({ booking, onCancel, onPay, onRebook, isProcessing }) => {
                     <p className="text-xl font-bold text-[#212529]">${booking.price}</p>
                 </div>
             </div>
-            {(isCancellable || isPayable || isRebookable) && (
-                 <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end gap-4">
-                    {isCancellable && (
-                        <button onClick={() => onCancel(booking.booking_id)} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors text-sm disabled:bg-red-300" disabled={isProcessing}>
-                            {isProcessing ? <LoadingIndicator small /> : <CancelIcon />}
-                            <span>{isProcessing ? "Loading..." : "Cancel Booking"}</span>
-                        </button>
-                    )}
-                    {isPayable && (
-                        <button onClick={() => onPay(booking)} className="flex items-center gap-2 bg-accent-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 transition-colors text-sm">
-                            <CreditCardIcon />
-                            <span>Pay Now</span>
-                        </button>
-                    )}
-                    {isRebookable && (
-                         <button onClick={() => onRebook(booking.booking_id)} className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm disabled:bg-blue-300" disabled={isProcessing}>
-                            {isProcessing ? <LoadingIndicator small /> : <RefreshCwIcon />}
-                            <span>{isProcessing ? "Re-booking..." : "Re-book"}</span>
-                        </button>
-                    )}
-                 </div>
-            )}
+            <div className="mt-4 pt-4 border-t border-gray-200 flex justify-end gap-4">
+                <button onClick={() => onReport(booking.ticket_id, booking.has_report)} className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-gray-600 transition-colors text-sm">
+                    <ReportIcon />
+                    <span>{booking.has_report ? "View Report" : "Report Issue"}</span>
+                </button>
+                {isCancellable && (
+                    <button onClick={() => onCancel(booking.booking_id)} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors text-sm disabled:bg-red-300" disabled={isProcessing}>
+                        {isProcessing ? <LoadingIndicator small /> : <CancelIcon />}
+                        <span>{isProcessing ? "Loading..." : "Cancel Booking"}</span>
+                    </button>
+                )}
+                {isPayable && (
+                    <button onClick={() => onPay(booking)} className="flex items-center gap-2 bg-accent-orange text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-500 transition-colors text-sm">
+                        <CreditCardIcon />
+                        <span>Pay Now</span>
+                    </button>
+                )}
+                {isRebookable && (
+                     <button onClick={() => onRebook(booking.booking_id)} className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-colors text-sm disabled:bg-blue-300" disabled={isProcessing}>
+                        {isProcessing ? <LoadingIndicator small /> : <RefreshCwIcon />}
+                        <span>{isProcessing ? "Re-booking..." : "Re-book"}</span>
+                    </button>
+                )}
+            </div>
         </div>
     );
 };
@@ -116,18 +119,24 @@ function MyBookings() {
     const [loading, setLoading] = useState(true);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [user, setUser] = useState({ first_name: 'Guest' });
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const [processingId, setProcessingId] = useState(null);
     const [penaltyInfo, setPenaltyInfo] = useState(null);
     const [notification, setNotification] = useState({ message: '', type: '' });
     const navigate = useNavigate();
+
+    // State for report modals
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [isViewReportModalOpen, setIsViewReportModalOpen] = useState(false);
+    const [selectedTicketId, setSelectedTicketId] = useState(null);
+    const [reportData, setReportData] = useState(null);
 
     const fetchBookings = async () => {
         try {
             const res = await api.get('/api/user-booking/');
             setBookings(res.data);
         } catch (err) {
-            setNotification({ message: "Failed to fetch bookings. Please try again later.", type: 'error' });
+            setNotification({ message: "Failed to fetch bookings.", type: 'error' });
         }
     };
 
@@ -139,7 +148,7 @@ function MyBookings() {
                 setUser(userRes.data);
                 await fetchBookings();
             } catch (err) {
-                 setNotification({ message: "Failed to load your data. Please refresh the page.", type: 'error' });
+                 setNotification({ message: "Failed to load your data.", type: 'error' });
             } finally {
                 setLoading(false);
             }
@@ -149,11 +158,10 @@ function MyBookings() {
 
     const handleOpenCancelModal = async (bookingId) => {
         setProcessingId(bookingId);
-        setPenaltyInfo(null);
         try {
             const res = await api.post('/api/check-penalty/', { reservation_id: bookingId });
             setPenaltyInfo(res.data);
-            setIsModalOpen(true);
+            setIsCancelModalOpen(true);
         } catch (err) {
             setNotification({ message: err.response?.data?.error || "Could not retrieve cancellation details.", type: 'error' });
         } finally {
@@ -166,7 +174,7 @@ function MyBookings() {
         try {
             await api.post('/api/cancel-ticket/', { reservation_id: penaltyInfo.reservation_id });
             await fetchBookings();
-            setIsModalOpen(false);
+            setIsCancelModalOpen(false);
             setNotification({ message: "Booking cancelled successfully.", type: 'success' });
         } catch (err) {
             setNotification({ message: err.response?.data?.error || "Failed to cancel the ticket.", type: 'error' });
@@ -183,10 +191,7 @@ function MyBookings() {
     const handleRebook = async (bookingId) => {
         setProcessingId(bookingId);
         try {
-            const res = await api.post('/api/rebook-ticket/', {
-                reservation_id: bookingId
-            });
-            // --- اصلاح کلیدی: آپدیت کردن state به صورت دستی و فوری ---
+            const res = await api.post('/api/rebook-ticket/', { reservation_id: bookingId });
             setBookings(currentBookings => 
                 currentBookings.map(b => 
                     b.booking_id === bookingId 
@@ -196,19 +201,35 @@ function MyBookings() {
             );
             setNotification({ message: "Seat re-booked successfully! Please proceed to payment.", type: 'success' });
         } catch (err) {
-            setNotification({ message: err.response?.data?.error || "Failed to re-book. The seat might have been taken.", type: 'error' });
+            setNotification({ message: err.response?.data?.error || "Failed to re-book.", type: 'error' });
         } finally {
             setProcessingId(null);
         }
     };
 
+    const handleReport = async (ticketId, hasReport) => {
+        setSelectedTicketId(ticketId);
+        if (hasReport) {
+            try {
+                const res = await api.get(`/api/report/${ticketId}/`);
+                setReportData(res.data);
+                setIsViewReportModalOpen(true);
+            } catch (err) {
+                setNotification({ message: "Could not fetch report details.", type: 'error' });
+            }
+        } else {
+            setIsReportModalOpen(true);
+        }
+    };
+
+    const onReportSubmitted = () => {
+        setNotification({ message: "Report submitted successfully!", type: 'success' });
+        fetchBookings(); // Refresh bookings to update the 'has_report' flag
+    };
+
     return (
         <div className="min-h-screen bg-[#F8F9FA]">
-            <Notification 
-                message={notification.message}
-                type={notification.type}
-                onClose={() => setNotification({ message: '', type: '' })}
-            />
+            <Notification message={notification.message} type={notification.type} onClose={() => setNotification({ message: '', type: '' })} />
             <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} />
             <Header onMenuClick={() => setIsMenuOpen(true)} user={user} />
             <main className="container mx-auto px-6 py-12 pt-24">
@@ -230,20 +251,14 @@ function MyBookings() {
                                 onCancel={handleOpenCancelModal}
                                 onPay={handlePay}
                                 onRebook={handleRebook}
+                                onReport={handleReport}
                                 isProcessing={processingId === booking.booking_id}
                             />
                         ))}
                     </div>
                 )}
             </main>
-            <ConfirmationModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onConfirm={handleConfirmCancel}
-                title="Confirm Cancellation"
-                confirmText="Yes, Cancel"
-                loading={processingId === penaltyInfo?.reservation_id}
-            >
+            <ConfirmationModal isOpen={isCancelModalOpen} onClose={() => setIsCancelModalOpen(false)} onConfirm={handleConfirmCancel} title="Confirm Cancellation" confirmText="Yes, Cancel" loading={processingId === penaltyInfo?.reservation_id}>
                 {penaltyInfo && (
                     <div className="space-y-2 text-left">
                         <p>Are you sure you want to cancel this booking?</p>
@@ -254,6 +269,8 @@ function MyBookings() {
                     </div>
                 )}
             </ConfirmationModal>
+            <ReportModal isOpen={isReportModalOpen} onClose={() => setIsReportModalOpen(false)} ticketId={selectedTicketId} onReportSubmitted={onReportSubmitted} />
+            {reportData && <ViewReportModal isOpen={isViewReportModalOpen} onClose={() => setIsViewReportModalOpen(false)} reportData={reportData} />}
         </div>
     );
 }

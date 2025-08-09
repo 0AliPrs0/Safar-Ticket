@@ -10,8 +10,6 @@ class UserBookingsAPIView(APIView):
             return Response({"error": "Authentication credentials were not provided."}, status=401)
 
         user_id = user_info.get('user_id')
-        if not user_id:
-            return Response({"error": "user_id not found in token"}, status=400)
 
         conn = None
         cursor = None
@@ -28,6 +26,7 @@ class UserBookingsAPIView(APIView):
                     r.reservation_id AS booking_id,
                     r.status,
                     r.expiration_time,
+                    t.ticket_id,
                     t.travel_id,
                     t.seat_number,
                     tr.price,
@@ -35,7 +34,8 @@ class UserBookingsAPIView(APIView):
                     tr.arrival_time,
                     tc.company_name AS transport_company_name,
                     dep_city.city_name AS departure_city_name,
-                    dest_city.city_name AS destination_city_name
+                    dest_city.city_name AS destination_city_name,
+                    CASE WHEN rp.report_id IS NOT NULL THEN TRUE ELSE FALSE END AS has_report
                 FROM Reservation r
                 JOIN Ticket t ON r.ticket_id = t.ticket_id
                 JOIN Travel tr ON t.travel_id = tr.travel_id
@@ -44,6 +44,7 @@ class UserBookingsAPIView(APIView):
                 LEFT JOIN City dep_city ON dep_term.city_id = dep_city.city_id
                 LEFT JOIN Terminal dest_term ON tr.destination_terminal_id = dest_term.terminal_id
                 LEFT JOIN City dest_city ON dest_term.city_id = dest_city.city_id
+                LEFT JOIN Report rp ON t.ticket_id = rp.ticket_id
                 WHERE r.user_id = %s
                 ORDER BY tr.departure_time DESC
             """
@@ -53,18 +54,16 @@ class UserBookingsAPIView(APIView):
             
             for booking in bookings:
                 if isinstance(booking.get('departure_time'), datetime):
-                    booking['departure_time'] = booking['departure_time'].isoformat()
+                    booking['departure_time'] = booking['departure_time'].isoformat() + "Z"
                 if isinstance(booking.get('arrival_time'), datetime):
-                    booking['arrival_time'] = booking['arrival_time'].isoformat()
+                    booking['arrival_time'] = booking['arrival_time'].isoformat() + "Z"
                 if isinstance(booking.get('expiration_time'), datetime):
-                    booking['expiration_time'] = booking['expiration_time'].isoformat()
+                    booking['expiration_time'] = booking['expiration_time'].isoformat() + "Z"
 
             return Response(bookings)
 
         except MySQLdb.Error as e:
             return Response({"error": f"Database query error: {str(e)}"}, status=500)
-        except Exception as e:
-            return Response({"error": f"An unexpected processing error occurred: {str(e)}"}, status=500)
         finally:
             if cursor:
                 cursor.close()

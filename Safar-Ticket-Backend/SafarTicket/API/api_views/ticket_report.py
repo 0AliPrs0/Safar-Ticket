@@ -15,47 +15,43 @@ class TicketReportAPIView(APIView):
             return Response({"error": "Authentication credentials were not provided."}, status=401)
 
         user_id = user_info.get('user_id')
-        
         ticket_id = request.data.get("ticket_id")
         report_category = request.data.get("report_category")
         report_text = request.data.get("report_text")
 
-        if not all([user_id, ticket_id, report_category, report_text]):
+        if not all([ticket_id, report_category, report_text]):
             return Response({"error": "All fields are required"}, status=400)
 
+        conn = None
+        cursor = None
         try:
             conn = MySQLdb.connect(
-                host="db",
-                user="root",
-                password="Aliprs2005",
-                database="safarticket",
-                port=3306
+                host="db", user="root", password="Aliprs2005",
+                database="safarticket", port=3306,
+                cursorclass=MySQLdb.cursors.DictCursor
             )
             cursor = conn.cursor()
+            conn.begin()
 
-            cursor.execute("SELECT user_id FROM User WHERE user_id = %s", (user_id,))
-            if not cursor.fetchone():
-                return Response({"error": "User not found"}, status=404)
-
-            cursor.execute("SELECT ticket_id FROM Ticket WHERE ticket_id = %s", (ticket_id,))
-            if not cursor.fetchone():
-                return Response({"error": "Ticket not found"}, status=404)
+            cursor.execute("SELECT report_id FROM Report WHERE ticket_id = %s", (ticket_id,))
+            if cursor.fetchone():
+                conn.rollback()
+                return Response({"error": "A report for this ticket already exists."}, status=409) # 409 Conflict
 
             cursor.execute("""
                 INSERT INTO Report (user_id, ticket_id, report_category, report_text, status, report_time)
                 VALUES (%s, %s, %s, %s, 'pending', %s)
-            """, (
-                user_id, ticket_id, report_category, report_text, datetime.now()
-            ))
+            """, (user_id, ticket_id, report_category, report_text, datetime.datetime.now()))
 
             conn.commit()
-            cursor.close()
-            conn.close()
-
             return Response({"message": "Report submitted successfully"}, status=201)
 
-        except Exception as e:
-            return Response({"error": str(e)}, status=500)
+        except MySQLdb.Error as e:
+            if conn: conn.rollback()
+            return Response({"error": f"Database error: {str(e)}"}, status=500)
+        finally:
+            if cursor: cursor.close()
+            if conn: conn.close()
 
 
 
