@@ -9,7 +9,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import VerifyOTP from "./pages/VerifyOTP";
 import ReservationPage from "./pages/ReservationPage";
-import PaymentPage from "./pages/PaymentPage"; 
+import PaymentPage from "./pages/PaymentPage";
+import ForgotPassword from "./pages/ForgotPassword"; 
+import ResetPassword from "./pages/ResetPassword"; 
 
 function Logout() {
   localStorage.clear();
@@ -25,7 +27,6 @@ function App() {
         <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         <Route path="/bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
         <Route path="/reserve/:travelId" element={<ProtectedRoute><ReservationPage /></ProtectedRoute>} />
-        
         <Route path="/payment/:reservationId" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
         
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
@@ -33,6 +34,9 @@ function App() {
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         
         <Route path="/verify-otp" element={<VerifyOTP />} />
+        
+        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>

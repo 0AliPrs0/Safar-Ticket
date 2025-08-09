@@ -100,3 +100,42 @@ def send_payment_reminder_email(to_email, expiration_time, reservation_details):
             server.send_message(msg)
     except Exception as e:
         print(f"Failed to send email: {e}")
+
+def send_password_reset_email(to_email, token):
+    subject = "Reset Your SafarTicket Password"
+    frontend_url = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:3000')
+    reset_link = f"{frontend_url}/reset-password/{token}"
+
+    body = f"""
+    <html>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; color: #333; padding: 20px; background-color: #F8F9FA;">
+        <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 12px; padding: 40px; background-color: #FFFFFF;">
+          <h1 style="color: #0D47A1; font-size: 28px;">Password Reset Request</h1>
+          <p style="font-size: 18px;">You requested to reset your password. Click the button below to set a new one.</p>
+          
+          <p style="margin-top: 30px; margin-bottom: 20px;">
+            <a href="{reset_link}" target="_blank" style="text-decoration: none; background-color: #FFA726; color: white; padding: 15px 25px; border-radius: 8px; font-size: 16px; font-weight: bold;">
+              Reset Your Password
+            </a>
+          </p>
+          
+          <p style="font-size: 14px; color: #777;">This link will expire in 15 minutes.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;" />
+          <p style="font-size: 12px; color: #aaa;">If you did not request this, please ignore this email.</p>
+        </div>
+      </body>
+    </html>
+    """
+
+    msg = MIMEText(body, 'html')
+    msg['Subject'] = subject
+    msg['From'] = settings.EMAIL_HOST_USER
+    msg['To'] = to_email
+
+    try:
+        with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
+            server.starttls()
+            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+            server.send_message(msg)
+    except Exception as e:
+        print(f"Failed to send email: {e}")
