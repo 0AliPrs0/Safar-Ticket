@@ -7,3 +7,4 @@ django-redis
 cryptography>=3.0
 mysql-connector-python
 django-cors-headers
+elasticsearch==8.11.1

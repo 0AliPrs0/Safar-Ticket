@@ -1,7 +1,6 @@
 version: "3.9"
 name: safarticket
 
-
 services:
   db:
     image: mysql:8.0
@@ -25,11 +24,23 @@ services:
     ports:
       - "6379:6379"
 
+  elasticsearch:
+    image: elasticsearch:8.11.1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
   backend:
     build: ./Safar-Ticket-Backend
     working_dir: /code
     command: >
-      sh -c "python SafarTicket/manage.py migrate && python SafarTicket/manage.py runserver 0.0.0.0:8000"
+      sh -c "python SafarTicket/manage.py migrate && 
+             python SafarTicket/manage.py index_all_travels &&
+             python SafarTicket/manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./Safar-Ticket-Backend:/code
     ports:
@@ -38,6 +49,8 @@ services:
       db:
         condition: service_healthy
       redis:
+        condition: service_started
+      elasticsearch:
         condition: service_started
     dns:
       - 8.8.8.8
@@ -53,6 +66,7 @@ services:
       - DB_PASSWORD=Aliprs2005
       - DB_HOST=db
       - DB_PORT=3306
+      - ES_HOST=elasticsearch
 
   cron:
     build: ./Safar-Ticket-Backend
@@ -86,3 +100,4 @@ services:
 
 volumes:
   db_data:
+  es_data:
