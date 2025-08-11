@@ -19,7 +19,7 @@ const Seat = ({ seat, status, onSelect }) => {
     return (
         <div 
             className={`${baseClasses} ${statusClasses}`} 
-            onClick={() => isAvailable && onSelect(seat.seat_number)}
+            onClick={() => (isAvailable || isSelected) && onSelect(seat.seat_number)}
             title={`Seat ${seat.seat_number}`}
         >
             <span className="z-10">{seat.seat_number}</span>

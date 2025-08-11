@@ -46,7 +46,9 @@ class UserBookingsAPIView(APIView):
                 LEFT JOIN City dest_city ON dest_term.city_id = dest_city.city_id
                 LEFT JOIN Report rp ON t.ticket_id = rp.ticket_id
                 WHERE r.user_id = %s
-                ORDER BY tr.departure_time DESC
+                ORDER BY 
+                    CASE WHEN r.status = 'canceled' THEN 1 ELSE 0 END ASC, 
+                    r.reservation_time DESC
             """
             
             cursor.execute(query, (user_id,))
