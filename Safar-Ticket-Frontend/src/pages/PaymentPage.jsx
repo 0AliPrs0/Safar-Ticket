@@ -90,6 +90,10 @@ function PaymentPage() {
     const location = useLocation();
     const navigate = useNavigate();
     
+    // Check for group payment state
+    const { allReservationIds, totalPrice } = location.state || {};
+    const isGroupPayment = Array.isArray(allReservationIds) && allReservationIds.length > 0;
+
     const [booking, setBooking] = useState(location.state?.booking || null);
     const [user, setUser] = useState(null);
     const [selectedMethod, setSelectedMethod] = useState('wallet');
@@ -98,16 +102,25 @@ function PaymentPage() {
     const [isPaying, setIsPaying] = useState(false);
     const [isCardFormValid, setIsCardFormValid] = useState(false);
 
+    const finalPrice = isGroupPayment ? totalPrice : booking?.price;
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const userRes = await api.get('/api/profile/');
                 setUser(userRes.data);
 
-                if (!booking) {
+                // If it's a single payment and booking details are not in state, fetch them
+                if (!isGroupPayment && !booking) {
                     const bookingRes = await api.get(`/api/booking/${reservationId}/`);
                     setBooking(bookingRes.data);
                 }
+                 // If it is a group payment, fetch the first booking's details for display
+                if (isGroupPayment && !booking) {
+                    const bookingRes = await api.get(`/api/booking/${allReservationIds[0]}/`);
+                    setBooking(bookingRes.data);
+                }
+
             } catch (err) {
                 setError("Failed to load booking details. It might be expired or invalid.");
             } finally {
@@ -115,19 +128,25 @@ function PaymentPage() {
             }
         };
         fetchData();
-    }, [reservationId]);
+    }, [reservationId, isGroupPayment]);
 
     const handlePayment = async () => {
         setIsPaying(true);
         setError('');
+        
+        const reservationIdsToPay = isGroupPayment ? allReservationIds : [reservationId];
+
         try {
-            await api.post('/api/payment-ticket/', {
-                reservation_id: reservationId,
-                payment_method: selectedMethod,
-            });
+            // Process payments sequentially to avoid deadlocks
+            for (const resId of reservationIdsToPay) {
+                await api.post('/api/payment-ticket/', {
+                    reservation_id: resId,
+                    payment_method: selectedMethod,
+                });
+            }
             navigate('/bookings', { state: { message: 'Payment successful! Your booking is confirmed.' } });
         } catch (err) {
-            setError(err.response?.data?.error || "Payment failed. Please try again.");
+            setError(err.response?.data?.error || "Payment failed. Please check your bookings page for details.");
         } finally {
             setIsPaying(false);
         }
@@ -151,34 +170,34 @@ function PaymentPage() {
         );
     }
 
-    const canAffordWithWallet = user && booking && user.wallet >= booking.price;
+    const canAffordWithWallet = user && finalPrice && user.wallet >= finalPrice;
     const isPayButtonDisabled = isPaying || 
                                 (selectedMethod === 'wallet' && !canAffordWithWallet) ||
                                 (selectedMethod === 'credit_card' && !isCardFormValid);
 
     return (
-        <div className="min-h-screen bg-gray-100 flex justify-center items-center p-4">
+        <div className="min-h-screen flex justify-center items-center p-4">
             <div className="w-full max-w-md">
-                <div className="bg-white rounded-xl shadow-2xl p-8">
-                    <h2 className="text-3xl font-bold text-center text-primary-blue mb-2">Complete Your Payment</h2>
-                    <p className="text-center text-gray-500 mb-8">You are one step away from confirming your trip.</p>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8">
+                    <h2 className="text-3xl font-bold text-center text-primary-blue dark:text-white mb-2">Complete Your Payment</h2>
+                    <p className="text-center text-gray-500 dark:text-gray-400 mb-8">You are one step away from confirming your trip.</p>
                     
-                    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-6">
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
                         <div className="flex justify-between items-center mb-2">
-                            <span className="font-semibold text-gray-600">Trip Details:</span>
-                            <span className="font-bold text-primary-blue">{booking.departure_city_name} → {booking.destination_city_name}</span>
+                            <span className="font-semibold text-gray-600 dark:text-gray-300">Trip Details:</span>
+                            <span className="font-bold text-primary-blue dark:text-secondary-blue">{isGroupPayment ? `${allReservationIds.length} tickets` : `${booking.departure_city_name} → ${booking.destination_city_name}`}</span>
                         </div>
                         <div className="flex justify-between items-center">
-                            <span className="font-semibold text-gray-600">Total Amount:</span>
-                            <span className="text-2xl font-bold text-accent-orange">${booking.price.toLocaleString()}</span>
+                            <span className="font-semibold text-gray-600 dark:text-gray-300">Total Amount:</span>
+                            <span className="text-2xl font-bold text-accent-orange">${finalPrice.toLocaleString()}</span>
                         </div>
                     </div>
 
-                    <h3 className="font-bold text-lg text-gray-800 mb-4">Select Payment Method</h3>
+                    <h3 className="font-bold text-lg text-gray-800 dark:text-gray-200 mb-4">Select Payment Method</h3>
                     <div className="space-y-4">
                         <div 
                             onClick={() => setSelectedMethod('wallet')}
-                            className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedMethod === 'wallet' ? 'border-primary-blue bg-blue-50' : 'border-gray-300'}`}
+                            className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedMethod === 'wallet' ? 'border-primary-blue bg-blue-50 dark:bg-blue-900/30' : 'border-gray-300 dark:border-gray-600'}`}
                         >
                             <WalletIcon className={`mr-4 ${selectedMethod === 'wallet' ? 'text-primary-blue' : 'text-gray-500'}`} />
                             <div>
@@ -190,25 +209,25 @@ function PaymentPage() {
                         </div>
                         <div 
                             onClick={() => setSelectedMethod('credit_card')}
-                            className={`flex flex-col items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedMethod === 'credit_card' ? 'border-primary-blue bg-blue-50' : 'border-gray-300'}`}
+                            className={`flex flex-col items-start p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedMethod === 'credit_card' ? 'border-primary-blue bg-blue-50 dark:bg-blue-900/30' : 'border-gray-300 dark:border-gray-600'}`}
                         >
                             <div className="flex items-center w-full">
                                 <CreditCardIcon className={`mr-4 ${selectedMethod === 'credit_card' ? 'text-primary-blue' : 'text-gray-500'}`} />
                                 <div>
                                     <p className="font-bold">Credit Card</p>
-                                    <p className="text-sm text-gray-500">Pay with Visa, Mastercard, etc.</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">Pay with Visa, Mastercard, etc.</p>
                                 </div>
                             </div>
                             {selectedMethod === 'credit_card' && <CreditCardForm onFormChange={setIsCardFormValid} isFormValid={isCardFormValid} />}
                         </div>
                         <div 
                             onClick={() => setSelectedMethod('crypto')}
-                            className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedMethod === 'crypto' ? 'border-primary-blue bg-blue-50' : 'border-gray-300'}`}
+                            className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all ${selectedMethod === 'crypto' ? 'border-primary-blue bg-blue-50 dark:bg-blue-900/30' : 'border-gray-300 dark:border-gray-600'}`}
                         >
                             <CryptoIcon className={`mr-4 ${selectedMethod === 'crypto' ? 'text-primary-blue' : 'text-gray-500'}`} />
                             <div>
                                 <p className="font-bold">Cryptocurrency</p>
-                                <p className="text-sm text-gray-500">Pay with digital currencies.</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Pay with digital currencies.</p>
                             </div>
                         </div>
                     </div>
@@ -223,7 +242,7 @@ function PaymentPage() {
                         disabled={isPayButtonDisabled}
                         className="mt-8 w-full bg-primary-blue text-white py-4 rounded-lg text-lg font-bold hover:bg-opacity-90 transition-all disabled:bg-gray-400"
                     >
-                        {isPaying ? 'Processing...' : `Pay $${booking.price.toLocaleString()}`}
+                        {isPaying ? 'Processing...' : `Pay $${finalPrice.toLocaleString()}`}
                     </button>
                 </div>
             </div>
