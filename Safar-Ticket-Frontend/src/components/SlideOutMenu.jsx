@@ -8,37 +8,32 @@ const TicketIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 
 const SettingsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.096 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
 const LogoutIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>;
 
-function SlideOutMenu({ isOpen, onClose, user }) {
+function SlideOutMenu({ isOpen, onClose, user, hasPendingPayment }) {
   const navigate = useNavigate();
   
-  // --- اضافه شدن گزینه Home به منو ---
   const menuItems = [
     { name: 'Home', icon: <HomeIcon />, path: '/' },
     { name: 'Profile', icon: <UserCircleIcon />, path: '/profile' },
-    { name: 'My Bookings', icon: <TicketIcon />, path: '/bookings' },
+    { name: 'My Bookings', icon: <TicketIcon />, path: '/bookings', notification: hasPendingPayment },
     { name: 'Settings', icon: <SettingsIcon />, path: '/settings' },
   ];
 
   return (
     <>
-      {/* Overlay */}
       <div 
         onClick={onClose}
         className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
       />
       
-      {/* Menu */}
       <aside 
-        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-gray-800 shadow-xl z-50 transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex flex-col h-full">
-            {/* --- هدر جدید منو با عکس پروفایل --- */}
             <div className="text-center p-6 bg-gradient-to-b from-[#0D47A1] to-[#42A5F5] text-white">
                 <img 
                     src={user.profile_image_url || `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=EBF4FF&color=0D47A1&size=96`} 
                     alt="Profile" 
                     className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border-4 border-white/50 shadow-lg"
-                    // در صورت خطا در بارگذاری عکس، یک جایگزین نمایش داده می‌شود
                     onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${user.first_name}+${user.last_name}&background=EBF4FF&color=0D47A1&size=96` }}
                 />
                 <h2 className="font-bold text-xl">{user.first_name} {user.last_name}</h2>
@@ -50,18 +45,19 @@ function SlideOutMenu({ isOpen, onClose, user }) {
                     <button
                         key={item.name}
                         onClick={() => { navigate(item.path); onClose(); }}
-                        className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-lg text-gray-700 hover:bg-gray-100 hover:text-[#0D47A1] transition-colors duration-200"
+                        className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-[#0D47A1] dark:hover:text-white transition-colors duration-200"
                     >
                         {item.icon}
                         <span className="font-semibold">{item.name}</span>
+                        {item.notification && <span className="w-2.5 h-2.5 bg-red-500 rounded-full ml-auto"></span>}
                     </button>
                 ))}
             </nav>
 
-            <div className="p-4 mt-auto">
+            <div className="p-4 mt-auto border-t dark:border-gray-700">
                 <button 
                     onClick={() => { navigate('/logout'); onClose(); }}
-                    className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-lg text-red-500 hover:bg-red-50 transition-colors duration-200"
+                    className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors duration-200"
                 >
                     <LogoutIcon />
                     <span className="font-semibold">Logout</span>

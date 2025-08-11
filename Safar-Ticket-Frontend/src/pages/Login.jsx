@@ -41,15 +41,15 @@ function Login() {
       {successMessage && <p className="text-green-600 bg-green-100 p-3 rounded-lg mb-6 text-center font-semibold">{successMessage}</p>}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-          <input id="email" className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue focus:outline-none transition" type="email" value={username} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" required />
+          <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+          <input id="email" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue focus:outline-none transition text-gray-900 dark:text-white" type="email" value={username} onChange={(e) => setEmail(e.target.value)} placeholder="email@example.com" required />
         </div>
         <div className="relative">
           <div className="flex justify-between items-center mb-1">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
             <Link to="/forgot-password" className="text-sm font-medium text-primary-blue hover:underline">Forgot Password?</Link>
           </div>
-          <input id="password" className="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-secondary-blue focus:outline-none transition" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
+          <input id="password" className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue focus:outline-none transition text-gray-900 dark:text-white" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required />
           <span className="absolute bottom-3.5 right-0 pr-3 flex items-center cursor-pointer text-gray-500 hover:text-primary-blue" onClick={() => setShowPassword(!showPassword)}>
             {showPassword ? <EyeOffIcon /> : <EyeIcon />}
           </span>

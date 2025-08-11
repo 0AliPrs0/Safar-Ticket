@@ -9,6 +9,7 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import planeImage from '../assets/pictures/plane.jpg';
 import trainImage from '../assets/pictures/train.jpg';
 import busImage from '../assets/pictures/bus.jpg';
+import Header from '../components/Header'; 
 
 const PlaneIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 5.2 5.2c.4.4 1 .5 1.4.1l.5-.3c.4-.3.6-.7.5-1.2z"/></svg>;
 const TrainIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 13.5l-1.5-1.5 1.5-1.5"/><path d="M21 13.5l1.5-1.5l-1.5-1.5"/><path d="M4.5 12h15"/><path d="M4.5 12l1.5 6.5-1.5 1.5h15l-1.5-1.5 1.5-6.5"/><path d="M4.5 12l1.5-6.5-1.5-1.5h15l-1.5 1.5l1.5 6.5"/></svg>;
@@ -66,42 +67,47 @@ function ChargeWalletModal({ isOpen, onClose, onChargeSuccess }) {
     );
 }
 
-function Header({ isAuthenticated, onMenuClick, user, onChargeClick }) {
-    const navigate = useNavigate();
-    return (
-        <header className="bg-white/80 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-30">
-            <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                    {isAuthenticated && <button onClick={onMenuClick} className="p-2 rounded-full hover:bg-gray-100"><MenuIcon /></button>}
-                    <div className="text-2xl font-bold text-[#0D47A1] cursor-pointer" onClick={() => navigate('/')}>✈️ SafarTicket</div>
-                </div>
-                <div className="flex items-center gap-4">
-                    {isAuthenticated ? (
-                        <>
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-100 border border-gray-200">
-                                <WalletIcon />
-                                <span className="font-bold text-[#0D47A1]">${user?.wallet?.toLocaleString() || '0'}</span>
-                                <button onClick={onChargeClick} className="ml-2 bg-[#0D47A1] text-white text-xs font-bold w-6 h-6 rounded-full hover:bg-opacity-90 transition-transform hover:scale-110">+</button>
-                            </div>
-                            <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-secondary-blue transition-all duration-200" title="My Account">
-                                <img
-                                    src={user?.profile_image_url || `https://ui-avatars.com/api/?name=${user?.first_name}+${user?.last_name}&background=0D47A1&color=fff&size=128`}
-                                    alt="User Profile"
-                                    className="w-full h-full object-cover"
-                                />
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <button onClick={() => navigate('/login')} className="font-semibold text-gray-700 hover:text-[#0D47A1] transition-colors">Login</button>
-                            <button onClick={() => navigate('/register')} className="bg-[#0D47A1] text-white px-5 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Register</button>
-                        </>
-                    )}
-                </div>
-            </nav>
-        </header>
-    );
-}
+// function Header({ isAuthenticated, onMenuClick, user, onChargeClick, hasPendingPayment }) {
+//     const navigate = useNavigate();
+//     return (
+//         <header className="bg-white/80 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-30">
+//             <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
+//                 <div className="flex items-center gap-4">
+//                     {isAuthenticated && (
+//                         <button onClick={onMenuClick} className="relative p-2 rounded-full hover:bg-gray-100">
+//                             <MenuIcon />
+//                             {hasPendingPayment && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+//                         </button>
+//                     )}
+//                     <div className="text-2xl font-bold text-[#0D47A1] cursor-pointer" onClick={() => navigate('/')}>✈️ SafarTicket</div>
+//                 </div>
+//                 <div className="flex items-center gap-4">
+//                     {isAuthenticated ? (
+//                         <>
+//                             <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-100 border border-gray-200">
+//                                 <WalletIcon />
+//                                 <span className="font-bold text-[#0D47A1]">${user?.wallet?.toLocaleString() || '0'}</span>
+//                                 <button onClick={onChargeClick} className="ml-2 bg-[#0D47A1] text-white text-xs font-bold w-6 h-6 rounded-full hover:bg-opacity-90 transition-transform hover:scale-110">+</button>
+//                             </div>
+//                             <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-secondary-blue transition-all duration-200" title="My Account">
+//                                 <img
+//                                     src={user?.profile_image_url || `https://ui-avatars.com/api/?name=${user?.first_name}+${user?.last_name}&background=0D47A1&color=fff&size=128`}
+//                                     alt="User Profile"
+//                                     className="w-full h-full object-cover"
+//                                 />
+//                             </button>
+//                         </>
+//                     ) : (
+//                         <>
+//                             <button onClick={() => navigate('/login')} className="font-semibold text-gray-700 hover:text-[#0D47A1] transition-colors">Login</button>
+//                             <button onClick={() => navigate('/register')} className="bg-[#0D47A1] text-white px-5 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Register</button>
+//                         </>
+//                     )}
+//                 </div>
+//             </nav>
+//         </header>
+//     );
+// }
 
 function SearchForm({ tripType, setTripType, onSearch }) {
     const [searchParams, setSearchParams] = useState({
@@ -154,27 +160,27 @@ function SearchForm({ tripType, setTripType, onSearch }) {
                 <TripTypeButton type="train" icon={<TrainIcon className="w-5 h-5" />} label="Train" />
                 <TripTypeButton type="bus" icon={<BusIcon className="w-5 h-5" />} label="Bus" />
             </div>
-            <div className="bg-white p-6 rounded-lg rounded-tl-none shadow-2xl">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg rounded-tl-none shadow-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                     <div className="relative md:col-span-8 flex items-center gap-4">
-                        <Select options={cities} value={searchParams.origin} onChange={(opt) => handleSelectChange('origin', opt)} placeholder="Origin" isClearable isSearchable styles={customSelectStyles} className="w-full" />
-                        <button onClick={handleSwap} type="button" className="flex-shrink-0 w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100 hover:text-[#0D47A1] transition-all duration-200"><SwapIcon /></button>
-                        <Select options={cities} value={searchParams.destination} onChange={(opt) => handleSelectChange('destination', opt)} placeholder="Destination" isClearable isSearchable styles={customSelectStyles} className="w-full" />
+                        <Select options={cities} value={searchParams.origin} onChange={(opt) => handleSelectChange('origin', opt)} placeholder="Origin" isClearable isSearchable styles={customSelectStyles} className="w-full text-gray-900" />
+                        <button onClick={handleSwap} type="button" className="flex-shrink-0 w-10 h-10 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary-blue transition-all duration-200"><SwapIcon /></button>
+                        <Select options={cities} value={searchParams.destination} onChange={(opt) => handleSelectChange('destination', opt)} placeholder="Destination" isClearable isSearchable styles={customSelectStyles} className="w-full text-gray-900" />
                     </div>
-                    <div className="md:col-span-2"><input type="date" name="departureDate" value={searchParams.departureDate} onChange={handleChange} className="w-full p-4 h-[60px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none text-gray-500" /></div>
-                    <div className="md:col-span-2 grid grid-cols-1"><button type="submit" className="w-full h-[60px] bg-[#FFA726] text-white rounded-lg text-lg font-bold hover:bg-opacity-90 transition-all duration-200 shadow-lg shadow-orange-500/30">Search</button></div>
+                    <div className="md:col-span-2"><input type="date" name="departureDate" value={searchParams.departureDate} onChange={handleChange} className="w-full p-4 h-[60px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue focus:outline-none text-gray-500 bg-white dark:bg-gray-700 dark:text-gray-300" /></div>
+                    <div className="md:col-span-2 grid grid-cols-1"><button type="submit" className="w-full h-[60px] bg-accent-orange text-white rounded-lg text-lg font-bold hover:bg-opacity-90 transition-all duration-200 shadow-lg shadow-orange-500/30">Search</button></div>
                 </div>
-                <div className="mt-4 flex justify-end"><button type="button" onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 text-[#0D47A1] font-semibold hover:underline"><FilterIcon /><span>{showFilters ? 'Hide' : 'Show'} Advanced Filters</span></button></div>
+                <div className="mt-4 flex justify-end"><button type="button" onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 text-primary-blue dark:text-secondary-blue font-semibold hover:underline"><FilterIcon /><span>{showFilters ? 'Hide' : 'Show'} Advanced Filters</span></button></div>
                 {showFilters && (
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                        <h3 className="text-lg font-semibold text-[#212529] mb-4">Optional Filters</h3>
+                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-semibold text-dark-text dark:text-white mb-4">Optional Filters</h3>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                            <input type="number" name="minPrice" value={searchParams.minPrice} onChange={handleChange} placeholder="Min Price" className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5]"/>
-                            <input type="number" name="maxPrice" value={searchParams.maxPrice} onChange={handleChange} placeholder="Max Price" className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5]"/>
-                            <select name="company" value={searchParams.company} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] bg-white"><option value="">All Companies</option>{Array.isArray(companies) && companies.map(comp => <option key={comp} value={comp}>{comp}</option>)}</select>
-                            <select name="travelOptionValue" value={searchParams.travelOptionValue} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] bg-white"><option value="">All {getTravelOptionLabel()}s</option>{Array.isArray(travelOptions.options) && travelOptions.options.map(opt => <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>)}</select>
+                            <input type="number" name="minPrice" value={searchParams.minPrice} onChange={handleChange} placeholder="Min Price" className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-secondary-blue"/>
+                            <input type="number" name="maxPrice" value={searchParams.maxPrice} onChange={handleChange} placeholder="Max Price" className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-secondary-blue"/>
+                            <select name="company" value={searchParams.company} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white dark:bg-gray-700"><option value="">All Companies</option>{Array.isArray(companies) && companies.map(comp => <option key={comp} value={comp}>{comp}</option>)}</select>
+                            <select name="travelOptionValue" value={searchParams.travelOptionValue} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white dark:bg-gray-700"><option value="">All {getTravelOptionLabel()}s</option>{Array.isArray(travelOptions.options) && travelOptions.options.map(opt => <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>)}</select>
                         </div>
-                        <div className="mt-4 flex items-center justify-start"><input id="round-trip-checkbox" name="isRoundTrip" type="checkbox" checked={searchParams.isRoundTrip} onChange={handleChange} className="h-5 w-5 text-[#0D47A1] rounded border-gray-300 focus:ring-[#42A5F5]" /><label htmlFor="round-trip-checkbox" className="ml-3 block text-sm text-gray-900 font-medium">Round Trip</label></div>
+                        <div className="mt-4 flex items-center justify-start"><input id="round-trip-checkbox" name="isRoundTrip" type="checkbox" checked={searchParams.isRoundTrip} onChange={handleChange} className="h-5 w-5 text-primary-blue rounded border-gray-300 focus:ring-secondary-blue" /><label htmlFor="round-trip-checkbox" className="ml-3 block text-sm font-medium dark:text-gray-300">Round Trip</label></div>
                     </div>
                 )}
             </div>
@@ -203,9 +209,10 @@ function Home() {
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [user, setUser] = useState(null);
+    const [hasPendingPayment, setHasPendingPayment] = useState(false);
 
     useEffect(() => {
-        const checkAuthAndFetchUser = async () => {
+        const checkAuthAndFetchData = async () => {
             const token = localStorage.getItem(ACCESS_TOKEN);
             if (!token) {
                 setIsAuthenticated(false);
@@ -213,15 +220,20 @@ function Home() {
                 return;
             }
             try {
-                const res = await api.get('/api/profile/');
-                setUser(res.data);
+                const userRes = await api.get('/api/profile/');
+                setUser(userRes.data);
                 setIsAuthenticated(true);
+
+                const bookingsRes = await api.get('/api/user-booking/');
+                const pending = bookingsRes.data.some(b => b.status === 'reserved' && new Date(b.expiration_time) > new Date());
+                setHasPendingPayment(pending);
+
             } catch(err) {
                 setIsAuthenticated(false);
                 setUser(null);
             }
         };
-        checkAuthAndFetchUser();
+        checkAuthAndFetchData();
     }, []);
 
     const handleSearch = async (params) => {
@@ -284,9 +296,15 @@ function Home() {
     };
     
     return (
-        <div className="min-h-screen bg-[#F8F9FA]">
-            {isAuthenticated && user && <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} />}
-            <Header isAuthenticated={isAuthenticated} onMenuClick={() => setIsMenuOpen(true)} user={user} onChargeClick={() => setIsWalletModalOpen(true)} />
+        <div className="min-h-screen">
+            {isAuthenticated && user && <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} hasPendingPayment={hasPendingPayment} />}
+            <Header 
+                isAuthenticated={isAuthenticated} 
+                onMenuClick={() => setIsMenuOpen(true)} 
+                user={user} 
+                onChargeClick={() => setIsWalletModalOpen(true)} 
+                hasPendingPayment={hasPendingPayment} 
+            />
             {isAuthenticated && <ChargeWalletModal isOpen={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} onChargeSuccess={(newBalance) => setUser(prev => ({ ...prev, wallet: newBalance }))} />}
             
             <main>
@@ -299,6 +317,7 @@ function Home() {
                             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-in-out ${tripType === type ? 'opacity-100' : 'opacity-0'}`}
                         />
                     ))}
+                    <div className="absolute inset-0 bg-black/40"></div>
                 </div>
                 
                 <div className="container mx-auto px-6 -mt-32 sm:-mt-24 z-20 relative">
@@ -309,33 +328,33 @@ function Home() {
                     {loading && <div className="text-center p-10"><LoadingIndicator/></div>}
                     {error && <div className="text-center p-10 text-red-500"><p>{error}</p></div>}
                     {!loading && searched && searchResults.length === 0 && (
-                        <div className="text-center p-10 bg-white rounded-lg shadow-md">
-                            <h3 className="text-2xl font-semibold text-[#212529]">No Tickets Found</h3>
-                            <p className="text-gray-500 mt-2">We couldn't find any trips matching your search criteria.</p>
+                        <div className="text-center p-10 bg-white dark:bg-gray-800 rounded-lg shadow-md border dark:border-gray-700">
+                            <h3 className="text-2xl font-semibold text-dark-text dark:text-white">No Tickets Found</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mt-2">We couldn't find any trips matching your search criteria.</p>
                         </div>
                     )}
                     {searchResults.length > 0 && (
                         <div className="space-y-4">
-                            <h2 className="text-2xl font-bold text-dark-text mb-4">Available Tickets</h2>
+                            <h2 className="text-2xl font-bold text-dark-text dark:text-white mb-4">Available Tickets</h2>
                             {searchResults.map(ticket => {
                                 const isPast = new Date(ticket.departure_time) < new Date();
                                 return (
                                 <div key={ticket.travel_id}>
                                     <div 
-                                        className={`bg-white p-4 rounded-lg shadow-md flex justify-between items-center transition-all duration-200 ${isPast ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-xl cursor-pointer'}`} 
+                                        className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md flex justify-between items-center transition-all duration-200 border dark:border-gray-700 ${isPast ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-xl dark:hover:shadow-blue-500/20 cursor-pointer'}`} 
                                         onClick={() => !isPast && handleTicketSelect(ticket.travel_id)}
                                     >
                                         <div>
-                                            <p className="font-bold text-lg text-primary-blue">{ticket.transport_company_name}</p>
-                                            <p className="font-semibold">{ticket.departure_city_name} to {ticket.destination_city_name}</p>
-                                            <p className="text-sm text-gray-500">{new Date(ticket.departure_time).toLocaleString()}</p>
+                                            <p className="font-bold text-lg text-primary-blue dark:text-secondary-blue">{ticket.transport_company_name}</p>
+                                            <p className="font-semibold dark:text-gray-200">{ticket.departure_city_name} to {ticket.destination_city_name}</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(ticket.departure_time).toLocaleString()}</p>
                                         </div>
                                         <div className="text-right flex flex-col items-end">
-                                            <p className="text-xl font-bold text-dark-text">${ticket.price}</p>
+                                            <p className="text-xl font-bold text-dark-text dark:text-white">${ticket.price}</p>
                                             {isPast ? (
-                                                <span className="mt-2 text-sm font-bold text-red-500 bg-red-100 px-3 py-1 rounded-full">Departed</span>
+                                                <span className="mt-2 text-sm font-bold text-red-500 bg-red-100 dark:bg-red-900/50 dark:text-red-400 px-3 py-1 rounded-full">Departed</span>
                                             ) : (
-                                                <span className="mt-2 text-sm font-semibold text-primary-blue">View Details</span>
+                                                <span className="mt-2 text-sm font-semibold text-primary-blue dark:text-secondary-blue">View Details</span>
                                             )}
                                         </div>
                                     </div>
