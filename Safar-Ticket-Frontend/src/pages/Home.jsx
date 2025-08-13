@@ -1,29 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
+import { useTranslation } from 'react-i18next';
 import api from '../api';
 import { ACCESS_TOKEN } from '../constants';
+import { faToEn } from '../i18n'; // Import the reverse dictionary
 import SlideOutMenu from '../components/SlideOutMenu';
 import ExpandedTicket from '../components/ExpandedTicket';
 import LoadingIndicator from '../components/LoadingIndicator';
+import Header from '../components/Header';
 import planeImage from '../assets/pictures/plane.jpg';
 import trainImage from '../assets/pictures/train.jpg';
 import busImage from '../assets/pictures/bus.jpg';
-import Header from '../components/Header'; 
 
 const PlaneIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 5.2 5.2c.4.4 1 .5 1.4.1l.5-.3c.4-.3.6-.7.5-1.2z"/></svg>;
 const TrainIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 13.5l-1.5-1.5 1.5-1.5"/><path d="M21 13.5l1.5-1.5l-1.5-1.5"/><path d="M4.5 12h15"/><path d="M4.5 12l1.5 6.5-1.5 1.5h15l-1.5-1.5 1.5-6.5"/><path d="M4.5 12l1.5-6.5-1.5-1.5h15l-1.5 1.5l1.5 6.5"/></svg>;
-const BusIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6v-2h4a2 2 0 0 1 2 2v2h-6z" /><path d="M16 4h2a2 2 0 0 1 2 2v2h-4" /><path d="M4 14v-2h16v2" /><path d="M4 12v-6a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v6" /><path d="M10 20.5a1.5 1.5 0 0 1 -3 0" /><path d="M17 20.5a1.5 1.5 0 0 1 -3 0" /></svg>;
+const BusIcon = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6v-2h4a2 2 0 0 1 2 2v2h-6z" /><path d="M16 4h2a2 2 0 0 1 2 2v2h-4" /><path d="M4 14v-2h16v2" /><path d="M4 12v-6a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v6" /><path d="M10 20.5a1.5 1.5 0 0 1 -3 0" /><path d="M17 20.5a1.5 1.5 0 0 1 -3 0" /></svg>;
 const SwapIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></svg>;
 const FilterIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>;
-const MenuIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
-const WalletIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>;
 const CloseIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
 
 function ChargeWalletModal({ isOpen, onClose, onChargeSuccess }) {
     const [amount, setAmount] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const { t } = useTranslation();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -44,22 +45,22 @@ function ChargeWalletModal({ isOpen, onClose, onChargeSuccess }) {
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-sm w-full">
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-bold text-gray-800">Charge Your Wallet</h3>
-                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100"><CloseIcon/></button>
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">{t('charge_wallet')}</h3>
+                    <button onClick={onClose} className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"><CloseIcon/></button>
                 </div>
                 <form onSubmit={handleSubmit}>
-                    <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount</label>
+                    <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 text-start">{t('amount')}</label>
                     <input
                         type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)}
                         placeholder="e.g., 500"
-                        className="mt-1 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none"
+                        className="mt-1 w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none"
                         required min="1"
                     />
                     {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
                     <button type="submit" disabled={loading} className="mt-6 w-full bg-[#FFA726] text-white py-3 rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-all duration-200 disabled:bg-gray-400">
-                        {loading ? 'Processing...' : 'Add to Wallet'}
+                        {loading ? t('loading') : t('add_to_wallet')}
                     </button>
                 </form>
             </div>
@@ -67,49 +68,8 @@ function ChargeWalletModal({ isOpen, onClose, onChargeSuccess }) {
     );
 }
 
-// function Header({ isAuthenticated, onMenuClick, user, onChargeClick, hasPendingPayment }) {
-//     const navigate = useNavigate();
-//     return (
-//         <header className="bg-white/80 backdrop-blur-md shadow-sm fixed top-0 left-0 right-0 z-30">
-//             <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
-//                 <div className="flex items-center gap-4">
-//                     {isAuthenticated && (
-//                         <button onClick={onMenuClick} className="relative p-2 rounded-full hover:bg-gray-100">
-//                             <MenuIcon />
-//                             {hasPendingPayment && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
-//                         </button>
-//                     )}
-//                     <div className="text-2xl font-bold text-[#0D47A1] cursor-pointer" onClick={() => navigate('/')}>✈️ SafarTicket</div>
-//                 </div>
-//                 <div className="flex items-center gap-4">
-//                     {isAuthenticated ? (
-//                         <>
-//                             <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-100 border border-gray-200">
-//                                 <WalletIcon />
-//                                 <span className="font-bold text-[#0D47A1]">${user?.wallet?.toLocaleString() || '0'}</span>
-//                                 <button onClick={onChargeClick} className="ml-2 bg-[#0D47A1] text-white text-xs font-bold w-6 h-6 rounded-full hover:bg-opacity-90 transition-transform hover:scale-110">+</button>
-//                             </div>
-//                             <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full overflow-hidden border-2 border-transparent hover:border-secondary-blue transition-all duration-200" title="My Account">
-//                                 <img
-//                                     src={user?.profile_image_url || `https://ui-avatars.com/api/?name=${user?.first_name}+${user?.last_name}&background=0D47A1&color=fff&size=128`}
-//                                     alt="User Profile"
-//                                     className="w-full h-full object-cover"
-//                                 />
-//                             </button>
-//                         </>
-//                     ) : (
-//                         <>
-//                             <button onClick={() => navigate('/login')} className="font-semibold text-gray-700 hover:text-[#0D47A1] transition-colors">Login</button>
-//                             <button onClick={() => navigate('/register')} className="bg-[#0D47A1] text-white px-5 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Register</button>
-//                         </>
-//                     )}
-//                 </div>
-//             </nav>
-//         </header>
-//     );
-// }
-
 function SearchForm({ tripType, setTripType, onSearch }) {
+    const { t, i18n } = useTranslation();
     const [searchParams, setSearchParams] = useState({
         origin: null, destination: null, departureDate: '', isRoundTrip: false,
         company: '', travelOptionValue: '', minPrice: '', maxPrice: '',
@@ -120,9 +80,15 @@ function SearchForm({ tripType, setTripType, onSearch }) {
     const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
-        api.get('/api/cities/').then(res => setCities(res.data.map(c => ({ value: c.city_name, label: c.city_name })))).catch(err => console.error("Error fetching cities:", err));
-        api.get('/api/companies/').then(res => setCompanies(res.data)).catch(err => console.error("Error fetching companies:", err));
-    }, []);
+        const lang = i18n.language.startsWith('fa') ? 'fa' : 'en';
+        
+        api.get(`/api/cities/?lang=${lang}`).then(res => {
+            const options = res.data.map(c => ({ value: c.city_name, label: c.city_name }));
+            setCities(options);
+        }).catch(err => console.error("Error fetching cities:", err));
+
+        api.get(`/api/companies/?lang=${lang}`).then(res => setCompanies(res.data)).catch(err => console.error("Error fetching companies:", err));
+    }, [i18n.language]);
 
     useEffect(() => {
         api.get(`/api/travel-options/?transport_type=${tripType}`)
@@ -143,44 +109,44 @@ function SearchForm({ tripType, setTripType, onSearch }) {
 
     const getTravelOptionLabel = () => {
         switch (travelOptions.type) {
-            case 'travel_class': return 'Class';
-            case 'bus_type': return 'Bus Type';
-            case 'train_rating': return 'Train Rating';
-            default: return 'Option';
+            case 'travel_class': return t('all_classes');
+            case 'bus_type': return t('all_bus_types');
+            case 'train_rating': return t('all_train_ratings');
+            default: return t('all_classes');
         }
     };
     
-    const TripTypeButton = ({ type, icon, label }) => ( <button type="button" onClick={() => setTripType(type)} className={`flex items-center gap-2 px-4 py-3 rounded-t-lg transition-all duration-200 border-b-4 ${tripType === type ? 'bg-white text-[#0D47A1] border-[#FFA726]' : 'bg-transparent text-white/80 hover:bg-white/10 border-transparent'}`}>{icon}<span className="font-bold">{label}</span></button> );
+    const TripTypeButton = ({ type, icon, label }) => ( <button type="button" onClick={() => setTripType(type)} className={`flex items-center gap-2 px-4 py-3 rounded-t-lg transition-all duration-200 border-b-4 ${tripType === type ? 'bg-white dark:bg-gray-800 text-[#0D47A1] dark:text-white border-[#FFA726]' : 'bg-transparent text-white/80 hover:bg-white/10 border-transparent'}`}>{icon}<span className="font-bold">{label}</span></button> );
     const customSelectStyles = { control: (provided) => ({ ...provided, minHeight: '60px', borderRadius: '0.5rem' }), menu: (provided) => ({...provided, zIndex: 10}) };
 
     return (
         <form onSubmit={handleSubmit} className="bg-white/10 backdrop-blur-lg p-2 rounded-xl border border-white/20">
             <div className="flex items-center -mb-px">
-                <TripTypeButton type="plane" icon={<PlaneIcon className="w-5 h-5" />} label="Flight" />
-                <TripTypeButton type="train" icon={<TrainIcon className="w-5 h-5" />} label="Train" />
-                <TripTypeButton type="bus" icon={<BusIcon className="w-5 h-5" />} label="Bus" />
+                <TripTypeButton type="plane" icon={<PlaneIcon className="w-5 h-5" />} label={t('flight')} />
+                <TripTypeButton type="train" icon={<TrainIcon className="w-5 h-5" />} label={t('train')} />
+                <TripTypeButton type="bus" icon={<BusIcon className="w-5 h-5" />} label={t('bus')} />
             </div>
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg rounded-tl-none shadow-2xl">
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                     <div className="relative md:col-span-8 flex items-center gap-4">
-                        <Select options={cities} value={searchParams.origin} onChange={(opt) => handleSelectChange('origin', opt)} placeholder="Origin" isClearable isSearchable styles={customSelectStyles} className="w-full text-gray-900" />
+                        <Select options={cities} value={searchParams.origin} onChange={(opt) => handleSelectChange('origin', opt)} placeholder={t('origin')} isClearable isSearchable styles={customSelectStyles} className="w-full text-gray-900" />
                         <button onClick={handleSwap} type="button" className="flex-shrink-0 w-10 h-10 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-primary-blue transition-all duration-200"><SwapIcon /></button>
-                        <Select options={cities} value={searchParams.destination} onChange={(opt) => handleSelectChange('destination', opt)} placeholder="Destination" isClearable isSearchable styles={customSelectStyles} className="w-full text-gray-900" />
+                        <Select options={cities} value={searchParams.destination} onChange={(opt) => handleSelectChange('destination', opt)} placeholder={t('destination')} isClearable isSearchable styles={customSelectStyles} className="w-full text-gray-900" />
                     </div>
-                    <div className="md:col-span-2"><input type="date" name="departureDate" value={searchParams.departureDate} onChange={handleChange} className="w-full p-4 h-[60px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue focus:outline-none text-gray-500 bg-white dark:bg-gray-700 dark:text-gray-300" /></div>
-                    <div className="md:col-span-2 grid grid-cols-1"><button type="submit" className="w-full h-[60px] bg-accent-orange text-white rounded-lg text-lg font-bold hover:bg-opacity-90 transition-all duration-200 shadow-lg shadow-orange-500/30">Search</button></div>
+                    <div className="md:col-span-2"><input type="date" name="departureDate" value={searchParams.departureDate} onChange={handleChange} className="w-full p-4 h-[60px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none text-gray-500 bg-white dark:bg-gray-700 dark:text-gray-300" /></div>
+                    <div className="md:col-span-2 grid grid-cols-1"><button type="submit" className="w-full h-[60px] bg-accent-orange text-white rounded-lg text-lg font-bold hover:bg-opacity-90 transition-all duration-200 shadow-lg shadow-orange-500/30">{t('search')}</button></div>
                 </div>
-                <div className="mt-4 flex justify-end"><button type="button" onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 text-primary-blue dark:text-secondary-blue font-semibold hover:underline"><FilterIcon /><span>{showFilters ? 'Hide' : 'Show'} Advanced Filters</span></button></div>
+                <div className="mt-4 flex justify-end rtl:justify-start"><button type="button" onClick={() => setShowFilters(!showFilters)} className="flex items-center gap-2 text-primary-blue dark:text-secondary-blue font-semibold hover:underline"><FilterIcon /><span>{showFilters ? t('hide_filters') : t('show_filters')}</span></button></div>
                 {showFilters && (
                     <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                        <h3 className="text-lg font-semibold text-dark-text dark:text-white mb-4">Optional Filters</h3>
+                        <h3 className="text-lg font-semibold text-dark-text dark:text-white mb-4 text-start">{t('optional_filters')}</h3>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                            <input type="number" name="minPrice" value={searchParams.minPrice} onChange={handleChange} placeholder="Min Price" className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-secondary-blue"/>
-                            <input type="number" name="maxPrice" value={searchParams.maxPrice} onChange={handleChange} placeholder="Max Price" className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-secondary-blue"/>
-                            <select name="company" value={searchParams.company} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white dark:bg-gray-700"><option value="">All Companies</option>{Array.isArray(companies) && companies.map(comp => <option key={comp} value={comp}>{comp}</option>)}</select>
-                            <select name="travelOptionValue" value={searchParams.travelOptionValue} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white dark:bg-gray-700"><option value="">All {getTravelOptionLabel()}s</option>{Array.isArray(travelOptions.options) && travelOptions.options.map(opt => <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>)}</select>
+                            <input type="number" name="minPrice" value={searchParams.minPrice} onChange={handleChange} placeholder={t('min_price')} className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-secondary-blue"/>
+                            <input type="number" name="maxPrice" value={searchParams.maxPrice} onChange={handleChange} placeholder={t('max_price')} className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-secondary-blue"/>
+                            <select name="company" value={searchParams.company} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white dark:bg-gray-700"><option value="">{t('all_companies')}</option>{Array.isArray(companies) && companies.map(comp => <option key={comp} value={comp}>{comp}</option>)}</select>
+                            <select name="travelOptionValue" value={searchParams.travelOptionValue} onChange={handleChange} className="w-full p-3 h-[50px] border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-secondary-blue bg-white dark:bg-gray-700"><option value="">{getTravelOptionLabel()}</option>{Array.isArray(travelOptions.options) && travelOptions.options.map(opt => <option key={opt} value={opt}>{opt.charAt(0).toUpperCase() + opt.slice(1)}</option>)}</select>
                         </div>
-                        <div className="mt-4 flex items-center justify-start"><input id="round-trip-checkbox" name="isRoundTrip" type="checkbox" checked={searchParams.isRoundTrip} onChange={handleChange} className="h-5 w-5 text-primary-blue rounded border-gray-300 focus:ring-secondary-blue" /><label htmlFor="round-trip-checkbox" className="ml-3 block text-sm font-medium dark:text-gray-300">Round Trip</label></div>
+                        <div className="mt-4 flex items-center justify-start"><input id="round-trip-checkbox" name="isRoundTrip" type="checkbox" checked={searchParams.isRoundTrip} onChange={handleChange} className="h-5 w-5 text-primary-blue rounded border-gray-300 focus:ring-secondary-blue" /><label htmlFor="round-trip-checkbox" className="ms-3 block text-sm font-medium dark:text-gray-300">{t('round_trip')}</label></div>
                     </div>
                 )}
             </div>
@@ -195,8 +161,8 @@ const headerImages = {
 };
 
 function Home() {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
-    const location = useLocation();
     const [tripType, setTripType] = useState('plane');
     const [searchResults, setSearchResults] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -242,13 +208,24 @@ function Home() {
         setSearched(true);
         setSearchResults([]);
         setSelectedTicketId(null);
+        
+        let originCityEn = params.origin?.value;
+        let destinationCityEn = params.destination?.value;
+        let company = params.company?.value;
+
+        if (i18n.language === 'fa') {
+            originCityEn = faToEn.cities[originCityEn] || originCityEn;
+            destinationCityEn = faToEn.cities[destinationCityEn] || destinationCityEn;
+            company = faToEn.companies[company] || company;
+        }
+
         const searchData = {
-            origin_city_name: params.origin?.value,
-            destination_city_name: params.destination?.value,
+            origin_city_name: originCityEn,
+            destination_city_name: destinationCityEn,
             travel_date: params.departureDate,
             transport_type: tripType,
             is_round_trip: params.isRoundTrip,
-            company_name: params.company,
+            company_name: company,
             min_price: params.minPrice,
             max_price: params.maxPrice,
         };
@@ -298,13 +275,7 @@ function Home() {
     return (
         <div className="min-h-screen">
             {isAuthenticated && user && <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} hasPendingPayment={hasPendingPayment} />}
-            <Header 
-                isAuthenticated={isAuthenticated} 
-                onMenuClick={() => setIsMenuOpen(true)} 
-                user={user} 
-                onChargeClick={() => setIsWalletModalOpen(true)} 
-                hasPendingPayment={hasPendingPayment} 
-            />
+            <Header isAuthenticated={isAuthenticated} onMenuClick={() => setIsMenuOpen(true)} user={user} onChargeClick={() => setIsWalletModalOpen(true)} hasPendingPayment={hasPendingPayment} />
             {isAuthenticated && <ChargeWalletModal isOpen={isWalletModalOpen} onClose={() => setIsWalletModalOpen(false)} onChargeSuccess={(newBalance) => setUser(prev => ({ ...prev, wallet: newBalance }))} />}
             
             <main>
@@ -329,32 +300,35 @@ function Home() {
                     {error && <div className="text-center p-10 text-red-500"><p>{error}</p></div>}
                     {!loading && searched && searchResults.length === 0 && (
                         <div className="text-center p-10 bg-white dark:bg-gray-800 rounded-lg shadow-md border dark:border-gray-700">
-                            <h3 className="text-2xl font-semibold text-dark-text dark:text-white">No Tickets Found</h3>
-                            <p className="text-gray-500 dark:text-gray-400 mt-2">We couldn't find any trips matching your search criteria.</p>
+                            <h3 className="text-2xl font-semibold text-dark-text dark:text-white">{t('no_tickets_found')}</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mt-2">{t('no_tickets_criteria')}</p>
                         </div>
                     )}
                     {searchResults.length > 0 && (
                         <div className="space-y-4">
-                            <h2 className="text-2xl font-bold text-dark-text dark:text-white mb-4">Available Tickets</h2>
+                            <h2 className="text-2xl font-bold text-dark-text dark:text-white mb-4 text-start">{t('available_tickets')}</h2>
                             {searchResults.map(ticket => {
                                 const isPast = new Date(ticket.departure_time) < new Date();
+                                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                                const departureLocaleDate = new Date(ticket.departure_time).toLocaleString(i18n.language === 'fa' ? 'fa-IR' : 'en-US', dateOptions);
+
                                 return (
                                 <div key={ticket.travel_id}>
                                     <div 
                                         className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md flex justify-between items-center transition-all duration-200 border dark:border-gray-700 ${isPast ? 'opacity-60 cursor-not-allowed' : 'hover:shadow-xl dark:hover:shadow-blue-500/20 cursor-pointer'}`} 
                                         onClick={() => !isPast && handleTicketSelect(ticket.travel_id)}
                                     >
-                                        <div>
+                                        <div className="text-start">
                                             <p className="font-bold text-lg text-primary-blue dark:text-secondary-blue">{ticket.transport_company_name}</p>
                                             <p className="font-semibold dark:text-gray-200">{ticket.departure_city_name} to {ticket.destination_city_name}</p>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">{new Date(ticket.departure_time).toLocaleString()}</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{departureLocaleDate}</p>
                                         </div>
-                                        <div className="text-right flex flex-col items-end">
+                                        <div className="text-end flex flex-col items-end">
                                             <p className="text-xl font-bold text-dark-text dark:text-white">${ticket.price}</p>
                                             {isPast ? (
-                                                <span className="mt-2 text-sm font-bold text-red-500 bg-red-100 dark:bg-red-900/50 dark:text-red-400 px-3 py-1 rounded-full">Departed</span>
+                                                <span className="mt-2 text-sm font-bold text-red-500 bg-red-100 dark:bg-red-900/50 dark:text-red-400 px-3 py-1 rounded-full">{t('departed')}</span>
                                             ) : (
-                                                <span className="mt-2 text-sm font-semibold text-primary-blue dark:text-secondary-blue">View Details</span>
+                                                <span className="mt-2 text-sm font-semibold text-primary-blue dark:text-secondary-blue">{t('view_details')}</span>
                                             )}
                                         </div>
                                     </div>

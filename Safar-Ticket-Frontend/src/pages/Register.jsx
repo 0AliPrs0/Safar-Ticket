@@ -1,6 +1,7 @@
 import { useState } from "react";
-import api from "../api";
 import { useNavigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import api from "../api";
 import LoadingIndicator from "../components/LoadingIndicator";
 import AuthFormContainer from "../components/AuthFormContainer";
 
@@ -19,6 +20,7 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,39 +50,42 @@ function Register() {
     }
   };
 
-  return (
-    <AuthFormContainer title="Create a New Account">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none" type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="First Name" required />
-          <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none" type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Last Name" required />
-        </div>
-        <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email Address" required />
-        <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="Phone Number" required />
+  const inputClasses = "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400";
+  const passwordInputClasses = `${inputClasses} pr-10`;
 
-        <div className="relative">
-          <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required />
-          <span className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400" onClick={() => setShowPassword(!showPassword)}>
-            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-          </span>
+  return (
+    <AuthFormContainer title={t('create_account')}>
+      <form onSubmit={handleSubmit} className="space-y-6 text-start" dir={i18n.language === 'fa' ? 'rtl' : 'ltr'}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input className={inputClasses} type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t('first_name')} required />
+          <input className={inputClasses} type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t('last_name')} required />
         </div>
-        <div className="relative">
-          <input className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#42A5F5] focus:outline-none" type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm Password" required />
-          <span className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+        <input dir="ltr" className={inputClasses} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('email_address')} required />
+        <input dir="ltr" className={inputClasses} type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder={t('phone_number')} required />
+
+        <div className="relative flex items-center">
+          <input dir="ltr" className={passwordInputClasses} type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('password')} required />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} aria-label="Toggle password visibility" className="absolute right-0 p-3 text-gray-400">
+            {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+          </button>
+        </div>
+        <div className="relative flex items-center">
+          <input dir="ltr" className={passwordInputClasses} type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t('confirm_password')} required />
+          <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} aria-label="Toggle confirm password visibility" className="absolute right-0 p-3 text-gray-400">
             {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
-          </span>
+          </button>
         </div>
         
         {loading && <LoadingIndicator />}
         {error && <p className="text-red-500 text-sm text-center">{error}</p>}
         
         <button className="w-full bg-[#FFA726] text-white py-3 rounded-lg text-lg font-semibold hover:bg-opacity-90 transition-all duration-200 disabled:bg-gray-400" type="submit" disabled={loading}>
-          Register
+          {t('register')}
         </button>
 
-        <p className="text-center text-sm text-gray-600">
-          Already have an account?{" "}
-          <Link to="/login" className="font-medium text-[#0D47A1] hover:underline">Login</Link>
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400">
+          {t('already_have_account')}{" "}
+          <Link to="/login" className="font-medium text-[#0D47A1] dark:text-secondary-blue hover:underline">{t('login')}</Link>
         </p>
       </form>
     </AuthFormContainer>

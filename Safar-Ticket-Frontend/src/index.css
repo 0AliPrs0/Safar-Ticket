@@ -3,8 +3,41 @@
 @tailwind utilities;
 
 @layer base {
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800&display=swap');
+
+  html {
+    font-family: 'Vazirmatn', sans-serif;
+  }
+
   body {
-    @apply bg-white text-dark-text transition-colors duration-300;
+    @apply bg-[#F8F9FA] text-dark-text transition-colors duration-300;
     @apply dark:bg-gray-900 dark:text-gray-200;
+  }
+
+  html[dir="rtl"] {
+    font-family: 'Vazirmatn', sans-serif;
+  }
+  
+  html[dir="rtl"] body {
+    text-align: right;
+  }
+
+  .password-input-wrapper {
+    position: relative;
+  }
+
+  .password-input-wrapper input {
+    padding-right: 40px !important;
+  }
+
+  .password-input-wrapper button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
   }
 }

@@ -1,12 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ThemeToggle from './ThemeToggle';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const MenuIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
 const WalletIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>;
 
+
 function Header({ isAuthenticated, onMenuClick, user, onChargeClick, hasPendingPayment }) {
     const navigate = useNavigate();
+    const { t } = useTranslation();
+
     return (
         <header className="bg-white/80 backdrop-blur-md dark:bg-gray-800/80 shadow-sm sticky top-0 left-0 right-0 z-30">
             <nav className="container mx-auto px-6 py-3 flex justify-between items-center">
@@ -20,6 +25,7 @@ function Header({ isAuthenticated, onMenuClick, user, onChargeClick, hasPendingP
                     <div className="text-2xl font-bold text-primary-blue dark:text-white cursor-pointer" onClick={() => navigate('/')}>✈️ SafarTicket</div>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-4">
+                    <LanguageSwitcher />
                     <ThemeToggle />
                     {isAuthenticated ? (
                         <>
@@ -40,8 +46,8 @@ function Header({ isAuthenticated, onMenuClick, user, onChargeClick, hasPendingP
                         </>
                     ) : (
                         <>
-                            <button onClick={() => navigate('/login')} className="font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-blue transition-colors">Login</button>
-                            <button onClick={() => navigate('/register')} className="bg-primary-blue text-white px-5 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">Register</button>
+                            <button onClick={() => navigate('/login')} className="font-semibold text-gray-700 dark:text-gray-300 hover:text-primary-blue transition-colors">{t('login')}</button>
+                            <button onClick={() => navigate('/register')} className="bg-primary-blue text-white px-5 py-2 rounded-lg font-semibold hover:bg-opacity-90 transition-all">{t('register')}</button>
                         </>
                     )}
                 </div>
