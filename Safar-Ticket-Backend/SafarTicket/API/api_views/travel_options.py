@@ -9,7 +9,7 @@ class TravelOptionsView(APIView):
         options = []
         conn = None
         try:
-            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306)
+            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306, use_unicode=True)
             cursor = conn.cursor()
 
             if transport_type == 'plane':

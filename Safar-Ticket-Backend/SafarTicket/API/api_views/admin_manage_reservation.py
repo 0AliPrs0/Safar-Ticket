@@ -6,7 +6,6 @@ import redis
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
-
 class AdminManageReservationAPIView(APIView):
     def post(self, request):
         user_info = getattr(request, 'user_info', None)
@@ -24,14 +23,7 @@ class AdminManageReservationAPIView(APIView):
         conn = None
         cursor = None
         try:
-            conn = MySQLdb.connect(
-                host="db",
-                user="root",
-                password="Aliprs2005",
-                database="safarticket",
-                port=3306
-            )
-            cursor = conn.cursor(MySQLdb.cursors.DictCursor)
+            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306, cursorclass=MySQLdb.cursors.DictCursor, use_unicode=True)
             conn.begin()
 
             cursor.execute("SELECT user_type FROM User WHERE user_id = %s", (admin_user_id,))
@@ -40,10 +32,7 @@ class AdminManageReservationAPIView(APIView):
                 conn.rollback()
                 return Response({"error": "Only admins can perform this action"}, status=403)
 
-            cursor.execute("""
-                SELECT status, user_id, ticket_id FROM Reservation 
-                WHERE reservation_id = %s FOR UPDATE
-            """, (reservation_id,))
+            cursor.execute("SELECT status, user_id, ticket_id FROM Reservation WHERE reservation_id = %s FOR UPDATE", (reservation_id,))
             reservation = cursor.fetchone()
             if not reservation:
                 conn.rollback()
@@ -54,6 +43,7 @@ class AdminManageReservationAPIView(APIView):
             ticket_id = reservation['ticket_id']
             next_status = current_status
 
+            # ACTION: Approve a 'reserved' ticket
             if action == "approve":
                 if current_status != 'reserved':
                     conn.rollback()
@@ -62,53 +52,74 @@ class AdminManageReservationAPIView(APIView):
                 cursor.execute("UPDATE Reservation SET status = 'paid' WHERE reservation_id = %s", (reservation_id,))
                 next_status = 'paid'
 
+            # ACTION: Admin directly cancels a reservation (paid or reserved)
             elif action == "cancel":
                 if current_status == 'canceled':
                     conn.rollback()
                     return Response({"error": "Reservation is already canceled"}, status=400)
 
                 cursor.execute("SELECT travel_id FROM Ticket WHERE ticket_id = %s", (ticket_id,))
-                travel = cursor.fetchone()
-                if not travel:
-                    conn.rollback()
-                    return Response({"error": "Related travel not found for this ticket"}, status=404)
-                travel_id = travel['travel_id']
+                travel_id = cursor.fetchone()['travel_id']
 
                 if current_status == 'paid':
-                    cursor.execute("""
-                        SELECT tr.departure_time, p.amount 
-                        FROM Travel tr
-                        LEFT JOIN Payment p ON p.reservation_id = %s
-                        WHERE tr.travel_id = %s
-                    """, (reservation_id, travel_id))
+                    # Full refund logic as before
+                    cursor.execute("SELECT tr.departure_time, p.amount FROM Travel tr LEFT JOIN Payment p ON p.reservation_id = %s WHERE tr.travel_id = %s", (reservation_id, travel_id))
                     travel_info = cursor.fetchone()
-
-                    if not travel_info:
-                        conn.rollback()
-                        return Response({"error": "Travel or Payment data not found"}, status=404)
-
                     departure_time, amount_paid = travel_info["departure_time"], travel_info["amount"]
-
-                    now = datetime.now()
-                    remaining_time = departure_time - now
-
-                    if remaining_time <= timedelta(hours=1):
-                        penalty_percent = 90
-                    elif remaining_time <= timedelta(hours=3):
-                        penalty_percent = 50
-                    else:
-                        penalty_percent = 10
-
+                    remaining_time = departure_time - datetime.now()
+                    
+                    if remaining_time <= timedelta(hours=1): penalty_percent = 90
+                    elif remaining_time <= timedelta(hours=3): penalty_percent = 50
+                    else: penalty_percent = 10
+                    
                     penalty_amount = round(float(amount_paid) * penalty_percent / 100)
                     refund_amount = float(amount_paid) - penalty_amount
 
                     cursor.execute("UPDATE User SET wallet = wallet + %s WHERE user_id = %s", (refund_amount, user_id))
-                    cursor.execute("UPDATE Payment SET payment_status = 'failed' WHERE reservation_id = %s", (reservation_id,))
-
+                    cursor.execute("UPDATE Payment SET payment_status = 'refunded' WHERE reservation_id = %s", (reservation_id,))
+                
                 cursor.execute("UPDATE Reservation SET status = 'canceled' WHERE reservation_id = %s", (reservation_id,))
                 cursor.execute("UPDATE Travel SET remaining_capacity = remaining_capacity + 1 WHERE travel_id = %s", (travel_id,))
                 next_status = 'canceled'
 
+            # ACTION: Approve a user's cancellation request
+            elif action == "approve_cancellation":
+                if current_status != 'cancellation_pending':
+                    conn.rollback()
+                    return Response({"error": "This reservation is not pending cancellation."}, status=400)
+                
+                # The logic is identical to a direct admin cancellation of a 'paid' ticket
+                cursor.execute("SELECT travel_id FROM Ticket WHERE ticket_id = %s", (ticket_id,))
+                travel_id = cursor.fetchone()['travel_id']
+
+                cursor.execute("SELECT tr.departure_time, p.amount FROM Travel tr JOIN Payment p ON p.reservation_id = %s WHERE tr.travel_id = %s", (reservation_id, travel_id))
+                travel_info = cursor.fetchone()
+                
+                departure_time, amount_paid = travel_info["departure_time"], travel_info["amount"]
+                remaining_time = departure_time - datetime.now()
+
+                if remaining_time <= timedelta(hours=1): penalty_percent = 90
+                elif remaining_time <= timedelta(hours=3): penalty_percent = 50
+                else: penalty_percent = 10
+                
+                penalty_amount = round(float(amount_paid) * penalty_percent / 100)
+                refund_amount = float(amount_paid) - penalty_amount
+
+                cursor.execute("UPDATE User SET wallet = wallet + %s WHERE user_id = %s", (refund_amount, user_id))
+                cursor.execute("UPDATE Payment SET payment_status = 'refunded' WHERE reservation_id = %s", (reservation_id,))
+                cursor.execute("UPDATE Reservation SET status = 'canceled' WHERE reservation_id = %s", (reservation_id,))
+                cursor.execute("UPDATE Travel SET remaining_capacity = remaining_capacity + 1 WHERE travel_id = %s", (travel_id,))
+                next_status = 'canceled'
+                
+            # ACTION: Reject a user's cancellation request
+            elif action == "reject_cancellation":
+                if current_status != 'cancellation_pending':
+                    conn.rollback()
+                    return Response({"error": "This reservation is not pending cancellation."}, status=400)
+                cursor.execute("UPDATE Reservation SET status = 'paid' WHERE reservation_id = %s", (reservation_id,))
+                next_status = 'paid'
+
+            # ACTION: Modify expiration time (from your original code)
             elif action == "modify":
                 if "expiration_time" not in new_data:
                     conn.rollback()
@@ -117,35 +128,27 @@ class AdminManageReservationAPIView(APIView):
                     expiration_time = datetime.fromisoformat(new_data["expiration_time"])
                 except ValueError:
                     conn.rollback()
-                    return Response({"error": "Invalid expiration_time format. Use ISO 8601 format."}, status=400)
+                    return Response({"error": "Invalid expiration_time format."}, status=400)
                 
                 cursor.execute("UPDATE Reservation SET expiration_time = %s WHERE reservation_id = %s", (expiration_time, reservation_id))
                 next_status = current_status
 
             else:
                 conn.rollback()
-                return Response({"error": "Invalid action"}, status=400)
-
-            if action in ["approve", "cancel"]:
-                cursor.execute("""
-                    INSERT INTO ReservationChange (reservation_id, support_id, prev_status, next_status)
-                    VALUES (%s, %s, %s, %s)
-                """, (reservation_id, admin_user_id, current_status, next_status))
+                return Response({"error": "Invalid action specified."}, status=400)
+            
+            if current_status != next_status:
+                cursor.execute("INSERT INTO ReservationChange (reservation_id, support_id, prev_status, next_status) VALUES (%s, %s, %s, %s)", (reservation_id, admin_user_id, current_status, next_status))
 
             conn.commit()
-
-            return Response({"message": f"Reservation action '{action}' performed successfully."})
+            return Response({"message": f"Action '{action}' performed successfully."})
 
         except MySQLdb.Error as e:
-            if conn:
-                conn.rollback()
+            if conn: conn.rollback()
             return Response({"error": f"Database error: {str(e)}"}, status=500)
         except Exception as e:
-            if conn:
-                conn.rollback()
+            if conn: conn.rollback()
             return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
         finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()

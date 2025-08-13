@@ -17,23 +17,22 @@ class UploadProfileImageAPIView(APIView):
 
         image_file = request.FILES['profile_image']
         
-        # ایجاد یک نام فایل یکتا برای جلوگیری از تداخل
+
         ext = image_file.name.split('.')[-1]
         filename = f"{uuid.uuid4()}.{ext}"
         
-        # تعریف مسیر برای ذخیره عکس‌ها
-        # مطمئن شوید که پوشه 'media/profile_pics' وجود دارد
+
         media_path = os.path.join(settings.MEDIA_ROOT, 'profile_pics')
         os.makedirs(media_path, exist_ok=True)
         
         file_path = os.path.join(media_path, filename)
 
-        # ذخیره فایل روی سرور
+
         with open(file_path, 'wb+') as destination:
             for chunk in image_file.chunks():
                 destination.write(chunk)
         
-        # ساخت URL قابل دسترس برای فرانت‌اند
+
         image_url = request.build_absolute_uri(os.path.join(settings.MEDIA_URL, 'profile_pics', filename))
 
         conn = None
@@ -42,7 +41,7 @@ class UploadProfileImageAPIView(APIView):
             conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306)
             cursor = conn.cursor()
             
-            # آپدیت کردن URL عکس در دیتابیس
+
             cursor.execute("UPDATE User SET profile_image_url = %s WHERE user_id = %s", (image_url, user_id))
             conn.commit()
 

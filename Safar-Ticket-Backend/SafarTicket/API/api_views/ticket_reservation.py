@@ -33,26 +33,14 @@ class ReserveTicketAPIView(APIView):
                 password="Aliprs2005",
                 database="safarticket",
                 port=3306,
-                cursorclass=MySQLdb.cursors.DictCursor
+                cursorclass=MySQLdb.cursors.DictCursor,
+                use_unicode=True
             )
             cursor = conn.cursor()
             conn.begin()
-
-
+            
             cursor.execute("""
-                UPDATE Reservation r
-                JOIN Ticket t ON r.ticket_id = t.ticket_id
-                SET r.status = 'canceled'
-                WHERE r.user_id = %s 
-                  AND t.travel_id = %s 
-                  AND t.seat_number = %s 
-                  AND r.status = 'reserved' 
-                  AND r.expiration_time <= NOW()
-            """, (user_id, travel_id, seat_number))
-
-
-            cursor.execute("""
-                SELECT tr.remaining_capacity, tr.total_capacity, tr.transport_type, tr.departure_time, tr.arrival_time, tr.return_time, tr.is_round_trip, tr.price,
+                SELECT tr.remaining_capacity, tr.total_capacity, tr.transport_type, tr.departure_time, tr.price,
                        dep_city.city_name AS departure_city, dest_city.city_name AS destination_city
                 FROM Travel tr
                 JOIN Terminal dep_term ON tr.departure_terminal_id = dep_term.terminal_id
@@ -90,7 +78,22 @@ class ReserveTicketAPIView(APIView):
                 return Response({"error": f"Seat {seat_number} is already occupied."}, status=400)
 
             cursor.execute("SELECT vehicle_id FROM Ticket WHERE travel_id = %s LIMIT 1", (travel_id,))
-            vehicle_id = cursor.fetchone()['vehicle_id'] if cursor.rowcount > 0 else None
+            ticket_info = cursor.fetchone()
+            vehicle_id = ticket_info['vehicle_id'] if ticket_info else None
+            
+            if not vehicle_id:
+                transport_map = {'plane': 'flight', 'bus': 'bus', 'train': 'train'}
+                vehicle_type = transport_map.get(travel_info['transport_type'])
+                if not vehicle_type:
+                    conn.rollback()
+                    return Response({"error": "Invalid transport type for vehicle assignment."}, status=500)
+                
+                cursor.execute("SELECT vehicle_id FROM VehicleDetail WHERE vehicle_type = %s ORDER BY RAND() LIMIT 1", (vehicle_type,))
+                random_vehicle = cursor.fetchone()
+                if not random_vehicle:
+                    conn.rollback()
+                    return Response({"error": f"No available vehicles of type '{vehicle_type}' found."}, status=500)
+                vehicle_id = random_vehicle['vehicle_id']
 
             cursor.execute("INSERT INTO Ticket (travel_id, vehicle_id, seat_number) VALUES (%s, %s, %s)", (travel_id, vehicle_id, seat_number))
             new_ticket_id = cursor.lastrowid
@@ -103,25 +106,34 @@ class ReserveTicketAPIView(APIView):
 
             cursor.execute("UPDATE Travel SET remaining_capacity = remaining_capacity - 1 WHERE travel_id = %s", (travel_id,))
             conn.commit()
+
+            # --- Caching and Email logic restored here ---
             try:
+                cursor.execute("SELECT allow_payment_reminders FROM User WHERE user_id = %s", (user_id,))
+                user_prefs = cursor.fetchone()
+                
                 reservation_cache_data = {
                     "status": "reserved",
                     "user_id": user_id,
                     "ticket_id": new_ticket_id,
-                    "price": travel_info["price"]
+                    "price": float(travel_info["price"])
                 }
                 redis_key = f"reservation_details:{new_reservation_id}"
-                redis_client.setex(redis_key, timedelta(minutes=10), json.dumps(reservation_cache_data))
+                redis_client.setex(redis_key, timedelta(minutes=10), json.dumps(reservation_cache_data, default=str))
                 
-                email_details = {
-                    "reservation_id": new_reservation_id,
-                    "departure_city": travel_info['departure_city'],
-                    "destination_city": travel_info['destination_city'],
-                    "departure_time": travel_info['departure_time'].strftime('%Y-%m-%d %H:%M')
-                }
-                send_payment_reminder_email(user_email, expiration_time, email_details)
-            except redis.exceptions.RedisError:
+                if user_prefs and user_prefs.get('allow_payment_reminders'):
+                    email_details = {
+                        "reservation_id": new_reservation_id,
+                        "departure_city": travel_info['departure_city'],
+                        "destination_city": travel_info['destination_city'],
+                        "departure_time": travel_info['departure_time'].strftime('%Y-%m-%d %H:%M')
+                    }
+                    if user_email:
+                        send_payment_reminder_email(user_email, expiration_time.strftime('%Y-%m-%d %H:%M:%S'), email_details)
+            except (redis.exceptions.RedisError, MySQLdb.Error, TypeError) as e:
+                print(f"Could not cache or send email for reservation: {e}")
                 pass
+            # --- End of restored logic ---
             
             return Response({
                 "message": "Ticket reserved successfully. Please complete the payment.",
@@ -131,13 +143,16 @@ class ReserveTicketAPIView(APIView):
 
         except MySQLdb.Error as e:
             if conn: conn.rollback()
-            return Response({"error": f"Database transaction failed: {str(e)}"}, status=500)
+            print(f"DATABASE ERROR in ReserveTicket: {e}")
+            return Response({"error": "An unexpected error occurred with the database. Please try again."}, status=500)
         except Exception as e:
             if conn: conn.rollback()
-            return Response({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
+            print(f"GENERAL ERROR in ReserveTicket: {e}")
+            return Response({"error": "An unexpected server error occurred."}, status=500)
         finally:
             if cursor: cursor.close()
             if conn: conn.close()
+
 
 class UserReservationsAPIView(APIView):
     def get(self, request):
@@ -146,9 +161,6 @@ class UserReservationsAPIView(APIView):
             return Response({"error": "Authentication credentials were not provided."}, status=401)
 
         user_id = user_info.get('user_id')
-
-        if not user_id:
-            return Response({"error": "user_id is required."}, status=400)
 
         try:
             conn = MySQLdb.connect(
@@ -169,8 +181,6 @@ class UserReservationsAPIView(APIView):
                 ORDER BY r.reservation_time DESC
             """, (user_id,))
             reservations = cursor.fetchall()
-            cursor.close()
-            conn.close()
             
             for r in reservations:
                 if isinstance(r.get('reservation_time'), datetime.datetime):
@@ -181,3 +191,7 @@ class UserReservationsAPIView(APIView):
             return Response(reservations)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+        finally:
+            if 'conn' in locals() and conn.open:
+                cursor.close()
+                conn.close()

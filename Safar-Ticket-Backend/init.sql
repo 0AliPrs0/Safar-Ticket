@@ -4,6 +4,7 @@
         city_name VARCHAR(100) NOT NULL
         );
 
+
     CREATE TABLE User (
         user_id BIGINT PRIMARY KEY AUTO_INCREMENT,
         first_name VARCHAR(100) NOT NULL,
@@ -40,6 +41,10 @@
 
     ALTER TABLE User ADD COLUMN profile_image_url VARCHAR(255) NULL;
 
+    ALTER TABLE User ADD COLUMN allow_payment_reminders BOOLEAN NOT NULL DEFAULT TRUE;
+
+    ALTER TABLE User ADD COLUMN preferred_language VARCHAR(5) NOT NULL DEFAULT 'en';
+
     CREATE TABLE Terminal (
     terminal_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     city_id BIGINT NOT NULL,
@@ -48,11 +53,13 @@
     FOREIGN KEY (city_id) REFERENCES City(city_id) ON DELETE CASCADE
         );
 
+
     CREATE TABLE TransportCompany (
         transport_company_id BIGINT PRIMARY KEY AUTO_INCREMENT,
         company_name VARCHAR(100) NOT NULL,
         transport_type ENUM('airplane', 'bus', 'train') NOT NULL
     );
+
 
     CREATE TABLE Travel (
         travel_id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -148,6 +155,8 @@
         FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE,
         FOREIGN KEY (ticket_id) REFERENCES Ticket(ticket_id) ON DELETE CASCADE
     );
+
+    ALTER TABLE Reservation MODIFY COLUMN status ENUM('reserved', 'paid', 'canceled', 'cancellation_pending') NOT NULL;
 
     CREATE TABLE Payment (
         payment_id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -257,6 +266,7 @@
     ('Tehran', 'Varamin'),
     ('Tehran', 'Eslamshahr'),
     ('Tehran', 'Pakdasht');
+
 
     INSERT INTO User (first_name, last_name, email, phone_number, user_type, city_id, password_hash, registration_date, account_status)
     VALUES
@@ -658,6 +668,7 @@
 
     INSERT INTO Terminal (city_id, terminal_name, terminal_type) VALUES
     (63, 'Pakdasht Terminal', 'bus_terminal');
+
 
     INSERT INTO TransportCompany (company_name, transport_type) VALUES
     ('Iran Bus Co.', 'bus'),

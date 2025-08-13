@@ -2,6 +2,7 @@ import MySQLdb
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import datetime
+from ..utils.translations import CITIES_FA, COMPANIES_FA, translate_from_dict
 
 class BookingDetailAPIView(APIView):
     def get(self, request, reservation_id):
@@ -10,9 +11,9 @@ class BookingDetailAPIView(APIView):
             return Response({"error": "Authentication credentials were not provided."}, status=401)
 
         user_id = user_info.get('user_id')
+        lang = request.headers.get('Accept-Language', 'en')
 
         conn = None
-        cursor = None
         try:
             conn = MySQLdb.connect(
                 host="db", user="root", password="Aliprs2005",
@@ -23,14 +24,9 @@ class BookingDetailAPIView(APIView):
 
             query = """
                 SELECT 
-                    r.reservation_id AS booking_id,
-                    r.status,
-                    r.expiration_time,
-                    t.travel_id,
-                    t.seat_number,
-                    tr.price,
-                    tr.departure_time,
-                    tr.arrival_time,
+                    r.reservation_id AS booking_id, r.status, r.expiration_time,
+                    t.travel_id, t.seat_number, tr.price,
+                    tr.departure_time, tr.arrival_time,
                     tc.company_name AS transport_company_name,
                     dep_city.city_name AS departure_city_name,
                     dest_city.city_name AS destination_city_name
@@ -51,20 +47,18 @@ class BookingDetailAPIView(APIView):
             if not booking:
                 return Response({"error": "Booking not found or you do not have permission to view it."}, status=404)
             
-            # Format datetime objects to string
-            if isinstance(booking.get('departure_time'), datetime):
-                booking['departure_time'] = booking['departure_time'].isoformat() + "Z"
-            if isinstance(booking.get('arrival_time'), datetime):
-                booking['arrival_time'] = booking['arrival_time'].isoformat() + "Z"
-            if isinstance(booking.get('expiration_time'), datetime):
-                booking['expiration_time'] = booking['expiration_time'].isoformat() + "Z"
+            booking['transport_company_name'] = translate_from_dict(booking['transport_company_name'], lang, COMPANIES_FA)
+            booking['departure_city_name'] = translate_from_dict(booking['departure_city_name'], lang, CITIES_FA)
+            booking['destination_city_name'] = translate_from_dict(booking['destination_city_name'], lang, CITIES_FA)
+
+            for key in ['departure_time', 'arrival_time', 'expiration_time']:
+                if isinstance(booking.get(key), datetime):
+                    booking[key] = booking[key].isoformat() + "Z"
 
             return Response(booking)
 
         except MySQLdb.Error as e:
             return Response({"error": f"Database query error: {str(e)}"}, status=500)
         finally:
-            if cursor:
-                cursor.close()
             if conn:
                 conn.close()

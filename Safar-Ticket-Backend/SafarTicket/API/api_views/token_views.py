@@ -22,7 +22,7 @@ class RefreshTokenAPIView(APIView):
 
         conn = None
         try:
-            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306)
+            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306, use_unicode=True)
             cursor = conn.cursor(MySQLdb.cursors.DictCursor)
             
             cursor.execute("SELECT * FROM User WHERE user_id = %s", (user_id,))

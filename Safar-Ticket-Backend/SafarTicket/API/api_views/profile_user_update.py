@@ -27,7 +27,8 @@ class ProfileUserUpdateAPIView(APIView):
                 user="root",
                 password="Aliprs2005",
                 database="safarticket",
-                port=3306
+                port=3306,
+                use_unicode=True
             )
             cursor = conn.cursor(MySQLdb.cursors.DictCursor)
             

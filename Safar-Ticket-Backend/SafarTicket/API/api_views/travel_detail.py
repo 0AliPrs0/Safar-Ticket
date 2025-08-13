@@ -2,11 +2,12 @@ import MySQLdb
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import json
+from ..utils.translations import CITIES_FA, COMPANIES_FA, TERMINALS_FA, translate_from_dict
 
 class TravelDetailAPIView(APIView):
     def get(self, request, travel_id):
+        lang = request.headers.get('Accept-Language', 'en')
         conn = None
-        cursor = None
         try:
             conn = MySQLdb.connect(
                 host="db", user="root", password="Aliprs2005",
@@ -19,8 +20,16 @@ class TravelDetailAPIView(APIView):
                 SELECT 
                     tr.travel_id, tr.price, tr.transport_type, tr.travel_class,
                     tr.departure_time, tr.arrival_time, tr.return_time, tr.is_round_trip,
-                    tr.remaining_capacity
+                    tr.remaining_capacity,
+                    tc.company_name AS transport_company_name,
+                    c_dep.city_name AS departure_city,
+                    c_dest.city_name AS destination_city
                 FROM Travel tr
+                LEFT JOIN TransportCompany tc ON tr.transport_company_id = tc.transport_company_id
+                LEFT JOIN Terminal t_dep ON tr.departure_terminal_id = t_dep.terminal_id
+                LEFT JOIN City c_dep ON t_dep.city_id = c_dep.city_id
+                LEFT JOIN Terminal t_dest ON tr.destination_terminal_id = t_dest.terminal_id
+                LEFT JOIN City c_dest ON t_dest.city_id = c_dest.city_id
                 WHERE tr.travel_id = %s
             """
             cursor.execute(main_query, (travel_id,))
@@ -28,53 +37,27 @@ class TravelDetailAPIView(APIView):
 
             if not travel_details:
                 return Response({"error": "Travel not found"}, status=404)
-
-            # Add other details like company name, cities etc.
-            # This part can be optimized, but is broken down for clarity
             
-            cursor.execute("SELECT company_name FROM TransportCompany tc JOIN Travel tr ON tc.transport_company_id = tr.transport_company_id WHERE tr.travel_id = %s", (travel_id,))
-            company_info = cursor.fetchone()
-            travel_details['transport_company_name'] = company_info['company_name'] if company_info else 'N/A'
-
-            cursor.execute("SELECT c.city_name FROM City c JOIN Terminal t ON c.city_id = t.city_id JOIN Travel tr ON t.terminal_id = tr.departure_terminal_id WHERE tr.travel_id = %s", (travel_id,))
-            dep_city_info = cursor.fetchone()
-            travel_details['departure_city'] = dep_city_info['city_name'] if dep_city_info else 'N/A'
+            travel_details['transport_company_name'] = translate_from_dict(travel_details['transport_company_name'], lang, COMPANIES_FA)
+            travel_details['departure_city'] = translate_from_dict(travel_details['departure_city'], lang, CITIES_FA)
+            travel_details['destination_city'] = translate_from_dict(travel_details['destination_city'], lang, CITIES_FA)
             
-            cursor.execute("SELECT c.city_name FROM City c JOIN Terminal t ON c.city_id = t.city_id JOIN Travel tr ON t.terminal_id = tr.destination_terminal_id WHERE tr.travel_id = %s", (travel_id,))
-            dest_city_info = cursor.fetchone()
-            travel_details['destination_city'] = dest_city_info['city_name'] if dest_city_info else 'N/A'
-
-
             cursor.execute("SELECT vehicle_id FROM Ticket WHERE travel_id = %s LIMIT 1", (travel_id,))
             ticket_info = cursor.fetchone()
             
             facilities = {}
             if ticket_info:
                 vehicle_id = ticket_info['vehicle_id']
-                
                 cursor.execute("SELECT vehicle_type FROM VehicleDetail WHERE vehicle_id = %s", (vehicle_id,))
                 vehicle_info = cursor.fetchone()
-
                 if vehicle_info:
-                    vehicle_type = vehicle_info['vehicle_type']
-                    
-                    detail_table = ""
-                    pk_name = ""
-                    if vehicle_type == 'flight':
-                        detail_table = "FlightDetail"
-                        pk_name = "flight_id"
-                    elif vehicle_type == 'train':
-                        detail_table = "TrainDetail"
-                        pk_name = "train_id"
-                    elif vehicle_type == 'bus':
-                        detail_table = "BusDetail"
-                        pk_name = "bus_id"
-                    
+                    vehicle_type_map = {'flight': "FlightDetail", 'train': "TrainDetail", 'bus': "BusDetail"}
+                    pk_map = {'flight': "flight_id", 'train': "train_id", 'bus': "bus_id"}
+                    detail_table = vehicle_type_map.get(vehicle_info['vehicle_type'])
+                    pk_name = pk_map.get(vehicle_info['vehicle_type'])
                     if detail_table:
-                        facilities_query = f"SELECT facilities FROM {detail_table} WHERE {pk_name} = %s"
-                        cursor.execute(facilities_query, (vehicle_id,))
+                        cursor.execute(f"SELECT facilities FROM {detail_table} WHERE {pk_name} = %s", (vehicle_id,))
                         facilities_result = cursor.fetchone()
-                        
                         if facilities_result and facilities_result.get('facilities'):
                             facilities = json.loads(facilities_result['facilities'])
 
@@ -89,7 +72,5 @@ class TravelDetailAPIView(APIView):
         except MySQLdb.Error as e:
             return Response({"error": f"Database error during detail fetch: {str(e)}"}, status=500)
         finally:
-            if cursor:
-                cursor.close()
             if conn:
                 conn.close()

@@ -19,7 +19,7 @@ class ForgotPasswordAPIView(APIView):
         conn = None
         cursor = None
         try:
-            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306, cursorclass=MySQLdb.cursors.DictCursor)
+            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306, cursorclass=MySQLdb.cursors.DictCursor, use_unicode=True)
             cursor = conn.cursor()
             cursor.execute("SELECT user_id FROM User WHERE email = %s", (email,))
             user = cursor.fetchone()
@@ -30,7 +30,7 @@ class ForgotPasswordAPIView(APIView):
                 redis_client.setex(f"reset_token:{token}", timedelta(minutes=15), user_id)
                 send_password_reset_email(email, token)
             
-            #  برای امنیت، همیشه پیام موفقیت‌آمیز برمی‌گردانیم
+
             return Response({"message": "If an account with that email exists, a password reset link has been sent."})
 
         except MySQLdb.Error as e:
@@ -72,7 +72,7 @@ class ResetPasswordAPIView(APIView):
             cursor.execute("UPDATE User SET password_hash = %s WHERE user_id = %s", (new_password_hash, user_id))
             conn.commit()
 
-            redis_client.delete(f"reset_token:{token}") #  توکن را پس از استفاده حذف کن
+            redis_client.delete(f"reset_token:{token}") 
 
             return Response({"message": "Password has been reset successfully."})
 

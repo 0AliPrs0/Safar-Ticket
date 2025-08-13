@@ -28,7 +28,8 @@ class TicketReportAPIView(APIView):
             conn = MySQLdb.connect(
                 host="db", user="root", password="Aliprs2005",
                 database="safarticket", port=3306,
-                cursorclass=MySQLdb.cursors.DictCursor
+                cursorclass=MySQLdb.cursors.DictCursor,
+                use_unicode=True
             )
             cursor = conn.cursor()
             conn.begin()
