@@ -27,6 +27,12 @@ from .api_views.booking_detail import BookingDetailAPIView
 from .api_views.change_password import ChangePasswordAPIView
 from .api_views.password_reset import ForgotPasswordAPIView, ResetPasswordAPIView
 from .api_views.get_report_by_ticket import GetReportByTicketAPIView
+from .api_views.settings_api import (
+    ChangeEmailRequestAPIView, 
+    ChangeEmailVerifyAPIView,
+    ToggleRemindersAPIView,
+    DeactivateAccountAPIView
+)
 
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
@@ -60,4 +66,8 @@ urlpatterns = [
     path('forgot-password/', ForgotPasswordAPIView.as_view(), name='forgot-password'),
     path('reset-password/', ResetPasswordAPIView.as_view(), name='reset-password'),
     path('report/<int:ticket_id>/', GetReportByTicketAPIView.as_view(), name='get-report-by-ticket'),
+    path('settings/change-email-request/', ChangeEmailRequestAPIView.as_view(), name='change-email-request'),
+    path('settings/change-email-verify/', ChangeEmailVerifyAPIView.as_view(), name='change-email-verify'),
+    path('settings/toggle-reminders/', ToggleRemindersAPIView.as_view(), name='toggle-reminders'),
+    path('settings/deactivate-account/', DeactivateAccountAPIView.as_view(), name='deactivate-account'),
 ]
