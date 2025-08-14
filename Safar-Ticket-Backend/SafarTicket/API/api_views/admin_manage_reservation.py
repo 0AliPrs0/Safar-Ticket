@@ -23,7 +23,15 @@ class AdminManageReservationAPIView(APIView):
         conn = None
         cursor = None
         try:
-            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306, cursorclass=MySQLdb.cursors.DictCursor, use_unicode=True)
+            conn = MySQLdb.connect(
+                host="db",
+                user="root",
+                password="Aliprs2005",
+                database="safarticket",
+                port=3306,
+                use_unicode=True
+            )
+            cursor = conn.cursor(MySQLdb.cursors.DictCursor)
             conn.begin()
 
             cursor.execute("SELECT user_type FROM User WHERE user_id = %s", (admin_user_id,))
@@ -145,6 +153,7 @@ class AdminManageReservationAPIView(APIView):
 
         except MySQLdb.Error as e:
             if conn: conn.rollback()
+            print(e)
             return Response({"error": f"Database error: {str(e)}"}, status=500)
         except Exception as e:
             if conn: conn.rollback()

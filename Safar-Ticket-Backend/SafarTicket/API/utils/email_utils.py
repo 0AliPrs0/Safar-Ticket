@@ -101,10 +101,10 @@ def send_payment_reminder_email(to_email, expiration_time, reservation_details):
     except Exception as e:
         print(f"Failed to send email: {e}")
 
-def send_password_reset_email(to_email, token):
+def send_password_reset_email(email, token, is_admin=False):
+    reset_path = "admin/reset-password" if is_admin else "reset-password"
+    reset_link = f"http://localhost:3000/{reset_path}/{token}"
     subject = "Reset Your SafarTicket Password"
-    frontend_url = getattr(settings, 'FRONTEND_BASE_URL', 'http://localhost:3000')
-    reset_link = f"{frontend_url}/reset-password/{token}"
 
     body = f"""
     <html>

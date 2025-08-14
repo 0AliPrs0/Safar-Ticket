@@ -29,6 +29,12 @@ class LoginAPIView(APIView):
             if not user_data_dict:
                 return Response({'error': 'Invalid credentials'}, status=401)
             
+            # --- FIX STARTS HERE ---
+            # Check if the user is an admin
+            if user_data_dict.get('user_type') == 'ADMIN':
+                return Response({'error': 'Admins must use the admin login page.'}, status=403)
+            # --- FIX ENDS HERE ---
+            
             if user_data_dict['account_status'] != 'ACTIVE':
                 return Response({'error': 'Account is not active. Please verify your email first.'}, status=403)
 
@@ -42,7 +48,7 @@ class LoginAPIView(APIView):
                 user_profile_json = json.dumps(user_data_dict, default=str)
                 redis_key = f"user_profile:{user_id}"
                 redis_client.setex(redis_key, timedelta(seconds=360), user_profile_json)
-            except redis.exceptions.RedisError as e:
+            except redis.exceptions.RedisError:
                 pass
 
             access_token = generate_access_token(user_id, email)

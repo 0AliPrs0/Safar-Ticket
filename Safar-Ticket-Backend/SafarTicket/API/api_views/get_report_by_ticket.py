@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import datetime
 
+
 class GetReportByTicketAPIView(APIView):
     def get(self, request, ticket_id):
         user_info = getattr(request, 'user_info', None)
@@ -10,22 +11,23 @@ class GetReportByTicketAPIView(APIView):
             return Response({"error": "Authentication credentials were not provided."}, status=401)
 
         user_id = user_info.get('user_id')
-
         conn = None
-        cursor = None
         try:
             conn = MySQLdb.connect(
                 host="db", user="root", password="Aliprs2005",
                 database="safarticket", port=3306,
                 cursorclass=MySQLdb.cursors.DictCursor,
-                use_unicode=True
+                charset='utf8mb4', use_unicode=True
             )
             cursor = conn.cursor()
 
             query = """
-                SELECT report_id, report_category, report_text, status, report_time, report_response
-                FROM Report
-                WHERE ticket_id = %s AND user_id = %s
+                SELECT 
+                    r.report_id, r.report_category, r.report_text, r.status, r.report_time, r.report_response,
+                    u.first_name, u.last_name, u.profile_image_url
+                FROM Report r
+                JOIN User u ON r.user_id = u.user_id
+                WHERE r.ticket_id = %s AND r.user_id = %s
             """
             
             cursor.execute(query, (ticket_id, user_id))
@@ -34,15 +36,18 @@ class GetReportByTicketAPIView(APIView):
             if not report:
                 return Response({"error": "Report not found for this ticket."}, status=404)
             
+            # Fix encoding for text fields
+            report['first_name'] = report.get('first_name')
+            report['last_name'] = report.get('last_name')
+            report['report_text'] = report.get('report_text')
+            report['report_response'] = report.get('report_response')
+
             if isinstance(report.get('report_time'), datetime):
                 report['report_time'] = report['report_time'].isoformat() + "Z"
 
             return Response(report)
-
         except MySQLdb.Error as e:
             return Response({"error": f"Database query error: {str(e)}"}, status=500)
         finally:
-            if cursor:
-                cursor.close()
             if conn:
                 conn.close()

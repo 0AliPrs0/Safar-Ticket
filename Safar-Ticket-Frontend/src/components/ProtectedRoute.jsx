@@ -4,8 +4,9 @@ import api from "../api";
 import { REFRESH_TOKEN, ACCESS_TOKEN } from "../constants";
 import { useState, useEffect } from "react";
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, isAdmin = false }) {
     const [isAuthorized, setIsAuthorized] = useState(null);
+    const loginPath = isAdmin ? "/admin/login" : "/login";
 
     useEffect(() => {
         const auth = async () => {
@@ -14,15 +15,19 @@ function ProtectedRoute({ children }) {
                 setIsAuthorized(false);
                 return;
             }
-            const decoded = jwtDecode(token);
-            const tokenExpiration = decoded.exp;
-            const now = Date.now() / 1000;
+            try {
+                const decoded = jwtDecode(token);
+                const tokenExpiration = decoded.exp;
+                const now = Date.now() / 1000;
 
-            if (tokenExpiration < now) {
-                const refreshed = await refreshToken();
-                setIsAuthorized(refreshed);
-            } else {
-                setIsAuthorized(true);
+                if (tokenExpiration < now) {
+                    const refreshed = await refreshToken();
+                    setIsAuthorized(refreshed);
+                } else {
+                    setIsAuthorized(true);
+                }
+            } catch (error) {
+                setIsAuthorized(false);
             }
         };
         auth();
@@ -51,7 +56,7 @@ function ProtectedRoute({ children }) {
         return <div>Loading...</div>;
     }
 
-    return isAuthorized ? children : <Navigate to="/login" />;
+    return isAuthorized ? children : <Navigate to={loginPath} />;
 }
 
 export default ProtectedRoute;
