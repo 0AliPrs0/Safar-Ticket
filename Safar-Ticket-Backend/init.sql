@@ -196,6 +196,10 @@
         FOREIGN KEY (support_id) REFERENCES User(user_id) ON DELETE CASCADE
         );
 
+    ALTER TABLE ReservationChange 
+        MODIFY COLUMN prev_status ENUM('reserved', 'paid', 'canceled', 'cancellation_pending') NOT NULL,
+        MODIFY COLUMN next_status ENUM('reserved', 'paid', 'canceled', 'cancellation_pending') NOT NULL;
+
     INSERT INTO City (province_name, city_name) VALUES
     ('Tehran', 'Tehran'),
     ('Razavi Khorasan', 'Mashhad'),
