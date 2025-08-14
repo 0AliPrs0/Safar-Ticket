@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../api';
 import SlideOutMenu from '../components/SlideOutMenu';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -7,7 +8,6 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import Notification from '../components/Notification';
 import { ReportModal, ViewReportModal } from '../components/ReportModals';
 import Header from '../components/Header';
-import { useTranslation } from 'react-i18next';
 
 const TicketIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"></path><path d="M13 5v2"></path><path d="M13 17v2"></path><path d="M13 11v2"></path></svg>;
 const CancelIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
@@ -42,8 +42,8 @@ const BookingCard = ({ booking, onCancel, onPay, onRebook, onReport, isProcessin
         return t(statusKey.replace('_', '_'));
     }
 
-    const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' , timeZone: 'UTC'};
-    const localeDate = departureDate.toLocaleString(i18n.language === 'fa' ? 'fa-IR' : 'en-US', dateOptions);
+    const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    const localeDate = departureDate.toLocaleString(i18n.language.startsWith('fa') ? 'fa-IR' : 'en-US', dateOptions);
 
     return (
         <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 transition-shadow hover:shadow-lg">
@@ -53,7 +53,7 @@ const BookingCard = ({ booking, onCancel, onPay, onRebook, onReport, isProcessin
                         <p className="font-bold text-lg text-[#0D47A1] dark:text-secondary-blue">{booking.transport_company_name}</p>
                         <span className="text-sm font-semibold bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-3 py-1 rounded-full">Seat: {booking.seat_number}</span>
                     </div>
-                    <p className="font-semibold text-gray-800 dark:text-gray-200 mt-1">{booking.departure_city_name} {t('to')} {booking.destination_city_name}</p>
+                    <p className="font-semibold text-gray-800 dark:text-gray-200 mt-1">{booking.departure_city_name} to {booking.destination_city_name}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">{localeDate}</p>
                 </div>
                 <div className="flex flex-col md:items-end gap-2">
@@ -217,7 +217,7 @@ function MyBookings() {
     return (
         <div className="min-h-screen">
              <Notification message={notification.message} type={notification.type} onClose={() => setNotification({ message: '', type: '' })} />
-            <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} hasPendingPayment={hasPendingPayment}/>
+            <SlideOutMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} user={user} hasPendingPayment={false}/>
             <Header onMenuClick={() => setIsMenuOpen(true)} user={user} isAuthenticated={true} hasPendingPayment={false}/>
             <main className="container mx-auto px-6 py-12 pt-24">
                 <h1 className="text-3xl font-bold text-[#0D47A1] dark:text-white mb-8 text-start">{t('my_bookings')}</h1>

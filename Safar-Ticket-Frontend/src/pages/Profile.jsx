@@ -5,11 +5,12 @@ import SlideOutMenu from '../components/SlideOutMenu';
 import LoadingIndicator from '../components/LoadingIndicator';
 import Notification from '../components/Notification';
 import Header from '../components/Header';
+import { faToEn } from '../i18n';
 
 const CameraIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>;
 
 function Profile() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [user, setUser] = useState(null);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,9 +22,10 @@ function Profile() {
 
   useEffect(() => {
     const fetchProfileData = async () => {
+        const lang = i18n.language.startsWith('fa') ? 'fa' : 'en';
         try {
           const profileRes = await api.get("/api/profile/");
-          const citiesRes = await api.get("/api/cities/");
+          const citiesRes = await api.get(`/api/cities/?lang=${lang}`);
           const bookingsRes = await api.get('/api/user-booking/');
 
           const profileData = profileRes.data;
@@ -43,7 +45,7 @@ function Profile() {
         }
       };
     fetchProfileData();
-  }, []);
+  }, [i18n.language]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -75,13 +77,27 @@ function Profile() {
     e.preventDefault();
     setLoading(true);
     setNotification({ message: '', type: '' });
-    const { email, profile_image_url, user_id, wallet, allow_payment_reminders, ...dataToUpdate } = user;
-    const filteredData = Object.fromEntries(Object.entries(dataToUpdate).filter(([_, value]) => value !== '' && value !== null));
+    
+    // Create a mutable copy for modification
+    let dataToUpdate = { ...user };
+
+    // Reverse translate city name if in Persian mode
+    if (i18n.language === 'fa' && dataToUpdate.city_name) {
+        const cityInEnglish = faToEn.cities[dataToUpdate.city_name];
+        if (cityInEnglish) {
+            dataToUpdate.city_name = cityInEnglish;
+        }
+    }
+    
+    const { email, profile_image_url, user_id, wallet, allow_payment_reminders, ...finalData } = dataToUpdate;
+    const filteredData = Object.fromEntries(Object.entries(finalData).filter(([_, value]) => value !== '' && value !== null));
+    
     if (Object.keys(filteredData).length === 0) {
       setNotification({ message: "No changes to update.", type: 'error' });
       setLoading(false);
       return;
     }
+
     try {
       const res = await api.put("/api/update-profile/", filteredData);
       setNotification({ message: res.data.message || "Profile updated successfully!", type: 'success' });

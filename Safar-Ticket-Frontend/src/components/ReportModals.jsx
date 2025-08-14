@@ -83,6 +83,9 @@ export function ViewReportModal({ isOpen, onClose, reportData }) {
         pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
         reviewed: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
     };
+    
+
+    const userProfileImage = reportData.profile_image_url || `https://ui-avatars.com/api/?name=${reportData.first_name}+${reportData.last_name}&background=0D47A1&color=fff&size=128`;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center p-4">
@@ -104,10 +107,14 @@ export function ViewReportModal({ isOpen, onClose, reportData }) {
                     </div>
                     
                     <div className="flex gap-4">
-                        <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0"><UserIcon className="text-gray-500 dark:text-gray-400" /></div>
+                        <img 
+                            src={userProfileImage} 
+                            alt={`${reportData.first_name} ${reportData.last_name}`}
+                            className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                        />
                         <div className="flex-1 min-w-0">
                             <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg">
-                                <p className="font-bold text-gray-800 dark:text-gray-200">Your Report</p>
+                                <p className="font-bold text-gray-800 dark:text-gray-200">{t('user_report')}</p>
                                 <p className="text-gray-700 dark:text-gray-300 mt-1 break-words">{reportData.report_text}</p>
                             </div>
                             <p className="text-xs text-gray-400 mt-1">{new Date(reportData.report_time).toLocaleString()}</p>

@@ -120,52 +120,60 @@ function ReservationPage() {
     }, [travelId]);
 
     const handleSelectSeat = (seatNumber) => {
-        if (selectedSeats.includes(seatNumber)) {
-            setSelectedSeats(selectedSeats.filter(s => s !== seatNumber));
-        } else {
-            setSelectedSeats([...selectedSeats, seatNumber]);
-        }
+        setSelectedSeats(prev => prev.includes(seatNumber) ? prev.filter(s => s !== seatNumber) : [...prev, seatNumber]);
     };
-
-    const handleConfirmReservation = async () => {
+    
+    const handleReservation = async (andPay = false) => {
         if (selectedSeats.length === 0) {
             setNotification({ message: "Please select at least one seat.", type: 'error' });
             return;
         }
         setIsReserving(true);
+        setNotification({ message: '', type: '' });
+
+        // Create an array of reservation promises, one for each seat
+        const reservationPromises = selectedSeats.map(seatNumber =>
+            api.post('/api/reserve-ticket/', {
+                travel_id: travelId,
+                seat_number: seatNumber 
+            })
+        );
+
         try {
-            await api.post('/api/reserve/', { travel_id: travelId, seat_numbers: selectedSeats });
-            setNotification({ message: "Reservation successful! Please proceed to payment.", type: 'success' });
-            setHasPendingPayment(true);
-            navigate('/my-bookings');
+            // Wait for all reservation requests to complete
+            const responses = await Promise.all(reservationPromises);
+            
+            if (andPay) {
+                const reservation_ids = responses.map(res => res.data.reservation_id);
+                navigate(`/payment/${reservation_ids[0]}`, { 
+                    state: { 
+                        allReservationIds: reservation_ids, 
+                        totalPrice: totalPrice 
+                    }
+                });
+            } else {
+                setNotification({ message: "Reservation successful! Please proceed to payment.", type: 'success' });
+                navigate('/bookings');
+            }
+
         } catch (err) {
-            setNotification({ message: err.response?.data?.error || "Reservation failed. Please try again.", type: 'error' });
+            setNotification({ message: err.response?.data?.error || "One or more seats could not be reserved. Please try again.", type: 'error' });
         } finally {
             setIsReserving(false);
         }
     };
-
-    const handlePay = () => {
-        if (selectedSeats.length === 0) {
-            setNotification({ message: "Please select at least one seat.", type: 'error' });
-            return;
-        }
-        navigate(`/payment/${travelId}`, { state: { seats: selectedSeats, travel: travelDetails } });
-    };
-
-    const totalPrice = travelDetails ? (travelDetails.price || 0) * selectedSeats.length : 0;
+    
+    if (loading || !user) return <div className="flex justify-center items-center h-screen"><LoadingIndicator /></div>;
+    
+    const totalPrice = (travelDetails?.price || 0) * selectedSeats.length;
 
     const renderLayout = () => {
         if (!travelDetails) return null;
         switch (travelDetails.transport_type.toLowerCase()) {
-            case 'plane':
-                return <PlaneLayout seats={seats} selectedSeats={selectedSeats} onSelectSeat={handleSelectSeat} />;
-            case 'bus':
-                return <BusLayout seats={seats} selectedSeats={selectedSeats} onSelectSeat={handleSelectSeat} />;
-            case 'train':
-                return <TrainLayout seats={seats} selectedSeats={selectedSeats} onSelectSeat={handleSelectSeat} />;
-            default:
-                return <p className="text-center text-gray-500">Seat map not available for this transport type.</p>;
+            case 'plane': return <PlaneLayout seats={seats} selectedSeats={selectedSeats} onSelectSeat={handleSelectSeat} />;
+            case 'bus': return <BusLayout seats={seats} selectedSeats={selectedSeats} onSelectSeat={handleSelectSeat} />;
+            case 'train': return <TrainLayout seats={seats} selectedSeats={selectedSeats} onSelectSeat={handleSelectSeat} />;
+            default: return <p className="text-center text-gray-500">Seat map not available for this transport type.</p>;
         }
     };
 
@@ -194,7 +202,7 @@ function ReservationPage() {
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-600 dark:text-gray-300">{t('route')}:</span>
-                                        <span className="font-semibold">{travelDetails.departure_city} {t('→')} {travelDetails.destination_city}</span>
+                                        <span className="font-semibold text-end">{i18n.language === 'fa' ? `${travelDetails.destination_city} → ${travelDetails.departure_city}` : `${travelDetails.departure_city} → ${travelDetails.destination_city}`}</span>
                                     </div>
                                     <div className="flex justify-between">
                                         <span className="text-gray-600 dark:text-gray-300">{t('date')}:</span>
@@ -220,14 +228,14 @@ function ReservationPage() {
                             </div>
                             <div className="mt-6 space-y-3">
                                 <button
-                                    onClick={handleConfirmReservation}
+                                    onClick={() => handleReservation(false)}
                                     disabled={selectedSeats.length === 0 || isReserving}
                                     className="w-full bg-[#42A5F5] text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all disabled:bg-gray-400"
                                 >
                                     {isReserving ? t('loading') : t('reserve')}
                                 </button>
                                 <button
-                                    onClick={handlePay}
+                                    onClick={() => handleReservation(true)}
                                     disabled={selectedSeats.length === 0 || isReserving}
                                     className="w-full bg-primary-blue text-white py-4 rounded-lg text-lg font-bold hover:bg-opacity-90 transition-all disabled:bg-gray-400"
                                 >
