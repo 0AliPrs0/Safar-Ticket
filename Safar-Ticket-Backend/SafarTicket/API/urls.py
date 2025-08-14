@@ -33,6 +33,12 @@ from .api_views.settings_api import (
     ToggleRemindersAPIView,
     DeactivateAccountAPIView
 )
+from .api_views.admin_login import AdminLoginAPIView
+from .api_views.admin_profile_update import AdminProfileUpdateAPIView
+from .api_views.admin_password_reset import AdminForgotPasswordAPIView, AdminResetPasswordAPIView
+from .api_views.admin_dashboard_api import AdminDashboardStatsAPIView, AdminSalesChartAPIView
+from .api_views.admin_reports_api import AdminReportsListView
+from .api_views.admin_cancellations_api import AdminCancellationsListView
 
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
@@ -70,4 +76,12 @@ urlpatterns = [
     path('settings/change-email-verify/', ChangeEmailVerifyAPIView.as_view(), name='change-email-verify'),
     path('settings/toggle-reminders/', ToggleRemindersAPIView.as_view(), name='toggle-reminders'),
     path('settings/deactivate-account/', DeactivateAccountAPIView.as_view(), name='deactivate-account'),
+    path('admin/login/', AdminLoginAPIView.as_view(), name='admin-login'),
+    path('admin/update-profile/', AdminProfileUpdateAPIView.as_view(), name='admin-update-profile'),
+    path('admin/forgot-password/', AdminForgotPasswordAPIView.as_view(), name='admin-forgot-password'),
+    path('admin/reset-password/', AdminResetPasswordAPIView.as_view(), name='admin-reset-password'),
+    path('admin/stats/', AdminDashboardStatsAPIView.as_view(), name='admin-stats'),
+    path('admin/stats/sales-chart/', AdminSalesChartAPIView.as_view(), name='admin-sales-chart'),
+    path('admin/reports/', AdminReportsListView.as_view(), name='admin-reports-list'),
+    path('admin/cancellations/', AdminCancellationsListView.as_view(), name='admin-cancellations-list'),
 ]
