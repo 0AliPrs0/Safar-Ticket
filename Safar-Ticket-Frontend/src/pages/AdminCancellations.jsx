@@ -11,7 +11,7 @@ function AdminCancellations() {
     const [loading, setLoading] = useState(true);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [actionToConfirm, setActionToConfirm] = useState(null); // 'approve' or 'reject'
+    const [actionToConfirm, setActionToConfirm] = useState(null);
     const [notification, setNotification] = useState({ message: '', type: '' });
 
     const fetchRequests = async () => {

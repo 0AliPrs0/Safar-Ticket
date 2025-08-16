@@ -1,9 +1,6 @@
 import smtplib
 from email.mime.text import MIMEText
 from django.conf import settings
-import smtplib
-from email.mime.text import MIMEText
-from django.conf import settings
 from datetime import timedelta 
 
 
@@ -130,7 +127,7 @@ def send_password_reset_email(email, token, is_admin=False):
     msg = MIMEText(body, 'html')
     msg['Subject'] = subject
     msg['From'] = settings.EMAIL_HOST_USER
-    msg['To'] = to_email
+    msg['To'] = email # Corrected from to_email to email
 
     try:
         with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
@@ -139,3 +136,40 @@ def send_password_reset_email(email, token, is_admin=False):
             server.send_message(msg)
     except Exception as e:
         print(f"Failed to send email: {e}")
+
+def send_notification_email(to_email, subject, title, message, details=None):
+    details_html = ""
+    if details:
+        details_html += '<div style="text-align: left; margin: 30px 0; padding: 20px; border: 1px solid #eee; border-radius: 8px; background-color: #fdfdfd;">'
+        for key, value in details.items():
+            details_html += f'<p style="margin: 5px 0; font-size: 16px;"><strong>{key}:</strong> {value}</p>'
+        details_html += '</div>'
+
+    body = f"""
+    <html>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; text-align: center; color: #333; padding: 20px; background-color: #F8F9FA;">
+        <div style="max-width: 600px; margin: auto; border: 1px solid #ddd; border-radius: 12px; padding: 40px; background-color: #FFFFFF;">
+          <h1 style="color: #0D47A1; font-size: 28px;">{title}</h1>
+          <p style="font-size: 18px; line-height: 1.6;">{message}</p>
+          
+          {details_html}
+          
+          <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;" />
+          <p style="font-size: 12px; color: #aaa;">Thank you for choosing SafarTicket!</p>
+        </div>
+      </body>
+    </html>
+    """
+
+    msg = MIMEText(body, 'html')
+    msg['Subject'] = subject
+    msg['From'] = settings.EMAIL_HOST_USER
+    msg['To'] = to_email
+
+    try:
+        with smtplib.SMTP(settings.EMAIL_HOST, settings.EMAIL_PORT) as server:
+            server.starttls()
+            server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+            server.send_message(msg)
+    except Exception as e:
+        print(f"Failed to send notification email: {e}")
