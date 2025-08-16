@@ -39,6 +39,14 @@ from .api_views.admin_password_reset import AdminForgotPasswordAPIView, AdminRes
 from .api_views.admin_dashboard_api import AdminDashboardStatsAPIView, AdminSalesChartAPIView
 from .api_views.admin_reports_api import AdminReportsListView
 from .api_views.admin_cancellations_api import AdminCancellationsListView
+from .api_views.admin_bookings_api import AdminBookingsListView
+from .api_views.admin_booking_actions import AdminBookingActionsAPIView 
+from .api_views.admin_users_api import (
+    AdminUserListView, 
+    AdminUserDetailView, 
+    AdminUserBookingsView, 
+    AdminUserStatusView
+)
 
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
@@ -84,4 +92,10 @@ urlpatterns = [
     path('admin/stats/sales-chart/', AdminSalesChartAPIView.as_view(), name='admin-sales-chart'),
     path('admin/reports/', AdminReportsListView.as_view(), name='admin-reports-list'),
     path('admin/cancellations/', AdminCancellationsListView.as_view(), name='admin-cancellations-list'),
+    path('admin/bookings/', AdminBookingsListView.as_view(), name='admin-bookings-list'),
+    path('admin/booking-actions/', AdminBookingActionsAPIView.as_view(), name='admin-booking-actions'),
+    path('admin/users/', AdminUserListView.as_view(), name='admin-user-list'),
+    path('admin/users/<int:user_id>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
+    path('admin/users/<int:user_id>/bookings/', AdminUserBookingsView.as_view(), name='admin-user-bookings'),
+    path('admin/users/<int:user_id>/status/', AdminUserStatusView.as_view(), name='admin-user-status'),
 ]

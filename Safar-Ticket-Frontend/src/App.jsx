@@ -23,6 +23,8 @@ import AdminForgotPassword from "./pages/AdminForgotPassword";
 import AdminSettings from './pages/AdminSettings';
 import AdminReports from './pages/AdminReports';
 import AdminCancellations from './pages/AdminCancellations';
+import AdminBookings from './pages/AdminBookings';
+import AdminManageUsers from './pages/AdminManageUsers'; 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -72,6 +74,8 @@ function App() {
           <Route path="settings" element={<AdminSettings />} /> 
           <Route path="reports" element={<AdminReports />} />
           <Route path="cancellations" element={<AdminCancellations />} />
+          <Route path="bookings" element={<AdminBookings />} />
+          <Route path="users" element={<AdminManageUsers />} />
         </Route>
         
         <Route path="*" element={<NotFound />} />
