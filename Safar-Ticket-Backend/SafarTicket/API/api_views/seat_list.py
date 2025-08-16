@@ -27,7 +27,7 @@ class SeatListAPIView(APIView):
                 SELECT t.seat_number 
                 FROM Reservation r
                 JOIN Ticket t ON r.ticket_id = t.ticket_id
-                WHERE t.travel_id = %s AND (r.status = 'paid' OR (r.status = 'reserved' AND r.expiration_time > NOW()))
+                WHERE t.travel_id = %s AND (r.status = 'cancellation_pending' OR (r.status = 'paid' OR (r.status = 'reserved' AND r.expiration_time > NOW())))
             """, (travel_id,))
             
             reserved_seats_tuples = cursor.fetchall()

@@ -7,6 +7,10 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
+    detection: {
+      order: ['localStorage', 'cookie', 'htmlTag', 'path', 'subdomain'],
+      caches: ['localStorage'],
+    },
     resources: {
       en: {
         translation: {
@@ -189,6 +193,14 @@ i18n
           "penalty": "Penalty",
           "refundable_amount": "Refundable Amount",
           request_detail:'Request Details',
+          "all_bookings": "All Bookings",
+          "reservation_id": "Reservation ID",
+          "status": "Status",
+          "mark_as_paid": "Mark as Paid",
+          "cancel_reservation": "Cancel Reservation",
+          "approve_reservation": "Approve Reservation",
+          "action_confirm_message": "Are you sure you want to {{action}} this reservation?",
+          "yes_button": "Yes, {{action}}",
         }
       },
       fa: {
@@ -372,6 +384,14 @@ i18n
           "penalty": "جریمه",
           "refundable_amount": "مبلغ قابل استرداد",
           request_detail:'جزئیات درخواست',
+          "all_bookings": "تمام رزروها",
+          "reservation_id": "شناسه رزرو",
+          "status": "وضعیت",
+          "mark_as_paid": "علامت‌گذاری به عنوان پرداخت شده",
+          "cancel_reservation": "لغو رزرو",
+          "approve_reservation": "تایید رزرو",
+          "action_confirm_message": "آیا از {{action}} این رزرو اطمینان دارید؟",
+          "yes_button": "بله، {{action}}",
         }
       }
     },
