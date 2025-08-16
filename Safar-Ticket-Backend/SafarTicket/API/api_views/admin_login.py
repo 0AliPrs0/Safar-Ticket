@@ -20,17 +20,16 @@ class AdminLoginAPIView(APIView):
                 cursorclass=MySQLdb.cursors.DictCursor
             )
             cursor = conn.cursor()
-            
+
             cursor.execute("SELECT * FROM User WHERE email = %s", (email,))
             user_data = cursor.fetchone()
 
             if not user_data:
                 return Response({'error': 'Invalid credentials'}, status=401)
-            
-            # CRITICAL: Check if user is an ADMIN
+
             if user_data.get('user_type') != 'ADMIN':
                 return Response({'error': 'You do not have permission to access the admin panel.'}, status=403)
-            
+
             if user_data['account_status'] != 'ACTIVE':
                 return Response({'error': 'Account is not active.'}, status=403)
 
@@ -39,8 +38,9 @@ class AdminLoginAPIView(APIView):
                 return Response({'error': 'Invalid credentials'}, status=401)
 
             user_id = user_data['user_id']
-            
-            access_token = generate_access_token(user_id, email)
+            user_type = user_data['user_type']
+
+            access_token = generate_access_token(user_id, email, user_type)
             refresh_token = generate_refresh_token(user_id)
 
             return Response({

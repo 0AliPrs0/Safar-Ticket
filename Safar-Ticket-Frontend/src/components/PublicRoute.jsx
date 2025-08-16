@@ -1,38 +1,25 @@
 import { Navigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { ACCESS_TOKEN } from "../constants";
-import { useState, useEffect } from "react";
 
 function PublicRoute({ children }) {
-    const [isAuthenticated, setIsAuthenticated] = useState(null);
+    const token = localStorage.getItem(ACCESS_TOKEN);
 
-    useEffect(() => {
-        const token = localStorage.getItem(ACCESS_TOKEN);
-        if (!token) {
-            setIsAuthenticated(false);
-            return;
-        }
-        
+    if (token) {
         try {
             const decoded = jwtDecode(token);
             const tokenExpiration = decoded.exp;
             const now = Date.now() / 1000;
 
-            if (tokenExpiration < now) {
-                setIsAuthenticated(false);
-            } else {
-                setIsAuthenticated(true);
+            if (tokenExpiration > now && decoded.user_type === 'CUSTOMER') {
+                return <Navigate to="/" />;
             }
         } catch (error) {
-            setIsAuthenticated(false);
+            return children;
         }
-    }, []);
-
-    if (isAuthenticated === null) {
-        return <div>Loading...</div>;
     }
 
-    return isAuthenticated ? <Navigate to="/" /> : children;
+    return children;
 }
 
 export default PublicRoute;
