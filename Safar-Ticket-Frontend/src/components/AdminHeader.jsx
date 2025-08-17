@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
 import { Link } from 'react-router-dom';
+import logoIcon from '../assets/logo-icon.svg'; 
 
 const AdminHeader = ({ user }) => {
     const { t } = useTranslation();
@@ -11,7 +12,10 @@ const AdminHeader = ({ user }) => {
         <header className="bg-white dark:bg-gray-800 shadow-md border-b dark:border-gray-700">
             <div className="container mx-auto px-6 py-4 flex justify-between items-center">
                 <div className="text-2xl font-bold text-primary-blue dark:text-white">
-                    <Link to="/">✈️ SafarTicket</Link>
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+                        <img src={logoIcon} alt="SafarTicket Icon" className="h-12" />
+                        <span className="text-2xl font-bold text-primary-blue dark:text-white hidden sm:block">SafarTicket</span>
+                    </div>
                 </div>
                 <div className="flex items-center gap-4">
                     <LanguageSwitcher />
