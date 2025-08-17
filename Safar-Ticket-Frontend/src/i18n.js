@@ -238,7 +238,7 @@ i18n
           logout: 'خروج',
 
           // Home Page
-          flight: 'پرواز',
+          flight: 'هواپیما',
           train: 'قطار',
           bus: 'اتوبوس',
           origin: 'مبدأ',
