@@ -30,6 +30,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
 import AdminLayout from "./components/AdminLayout";
 import LoadingIndicator from "./components/LoadingIndicator";
+import Footer from "./components/Footer"; 
 
 function Logout() {
   localStorage.clear();
@@ -42,44 +43,49 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        {/* User Routes */}
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-        <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
-        <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
-        <Route path="/verify-otp" element={<VerifyOTP />} />
-        <Route path="/logout" element={<Logout />} />
-        
-        <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-        <Route path="/bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
-        <Route path="/reserve/:travelId" element={<ProtectedRoute><ReservationPage /></ProtectedRoute>} />
-        <Route path="/payment/:reservationId" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <div className="flex flex-col min-h-screen">
+        <main className="flex-grow"> 
+          <Routes>
+            {/* User Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+            <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+            <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+            <Route path="/reset-password/:token" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+            <Route path="/verify-otp" element={<VerifyOTP />} />
+            <Route path="/logout" element={<Logout />} />
+            
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+            <Route path="/reserve/:travelId" element={<ProtectedRoute><ReservationPage /></ProtectedRoute>} />
+            <Route path="/payment/:reservationId" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
 
-        {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
-        <Route 
-          path="/admin"
-          element={
-            <ProtectedRoute isAdmin={true}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path="dashboard" element={<AdminDashboard />} />
-          <Route path="profile" element={<AdminProfile />} />
-          <Route path="settings" element={<AdminSettings />} /> 
-          <Route path="reports" element={<AdminReports />} />
-          <Route path="cancellations" element={<AdminCancellations />} />
-          <Route path="bookings" element={<AdminBookings />} />
-          <Route path="users" element={<AdminManageUsers />} />
-        </Route>
-        
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
+            <Route 
+              path="/admin"
+              element={
+                <ProtectedRoute isAdmin={true}>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="profile" element={<AdminProfile />} />
+              <Route path="settings" element={<AdminSettings />} /> 
+              <Route path="reports" element={<AdminReports />} />
+              <Route path="cancellations" element={<AdminCancellations />} />
+              <Route path="bookings" element={<AdminBookings />} />
+              <Route path="users" element={<AdminManageUsers />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          </main>
+        <Footer />
+        </div>
     </BrowserRouter>
   );
 }

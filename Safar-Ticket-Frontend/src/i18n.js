@@ -201,6 +201,15 @@ i18n
           "approve_reservation": "Approve Reservation",
           "action_confirm_message": "Are you sure you want to {{action}} this reservation?",
           "yes_button": "Yes, {{action}}",
+          "footer_description": "The comprehensive platform for buying and selling travel tickets. An easy and reliable experience for your travels.",
+          "quick_links": "Quick Links",
+          "about_us": "About Us",
+          "contact_us": "Contact Us",
+          "university_address": "Tehran, Shariati St., K. N. Toosi University of Technology",
+          "email_address_label": "Email",
+          "phone_label": "Phone",
+          "social_media": "Social Media",
+          "copyright_notice": "© {{year}} SafarTicket. All Rights Reserved.",
         }
       },
       fa: {

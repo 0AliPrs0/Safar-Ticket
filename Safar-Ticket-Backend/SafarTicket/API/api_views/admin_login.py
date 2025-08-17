@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 import hashlib
 from ..utils.jwt import generate_access_token, generate_refresh_token
+import os
 
 class AdminLoginAPIView(APIView):
     def post(self, request):
@@ -15,8 +16,11 @@ class AdminLoginAPIView(APIView):
         conn = None
         try:
             conn = MySQLdb.connect(
-                host="db", user="root", password="Aliprs2005",
-                database="safarticket", port=3306,
+                host=os.environ.get('DB_HOST'),
+                user=os.environ.get('DB_USER'),
+                password=os.environ.get('DB_PASSWORD'),
+                database=os.environ.get('DB_NAME'),
+                port=int(os.environ.get('DB_PORT')),
                 cursorclass=MySQLdb.cursors.DictCursor
             )
             cursor = conn.cursor()

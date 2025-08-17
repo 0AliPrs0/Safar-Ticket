@@ -6,6 +6,7 @@ from datetime import timedelta
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..utils.email_utils import send_password_reset_email
+import os
 import re
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
@@ -18,7 +19,14 @@ class AdminForgotPasswordAPIView(APIView):
 
         conn = None
         try:
-            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306, cursorclass=MySQLdb.cursors.DictCursor)
+            conn = MySQLdb.connect(
+                host=os.environ.get('DB_HOST'),
+                user=os.environ.get('DB_USER'),
+                password=os.environ.get('DB_PASSWORD'),
+                database=os.environ.get('DB_NAME'),
+                port=int(os.environ.get('DB_PORT')),
+                cursorclass=MySQLdb.cursors.DictCursor
+            )
             cursor = conn.cursor()
             cursor.execute("SELECT user_id FROM User WHERE email = %s AND user_type = 'ADMIN'", (email,))
             user = cursor.fetchone()

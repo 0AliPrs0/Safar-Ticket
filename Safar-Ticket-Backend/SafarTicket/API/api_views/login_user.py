@@ -6,6 +6,7 @@ import json
 import redis
 from datetime import timedelta
 from ..utils.jwt import generate_access_token, generate_refresh_token
+import os
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
@@ -20,7 +21,14 @@ class LoginAPIView(APIView):
         conn = None
         cursor = None
         try:
-            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306)
+            conn = MySQLdb.connect(
+                host=os.environ.get('DB_HOST'),
+                user=os.environ.get('DB_USER'),
+                password=os.environ.get('DB_PASSWORD'),
+                database=os.environ.get('DB_NAME'),
+                port=int(os.environ.get('DB_PORT')),
+                cursorclass=MySQLdb.cursors.DictCursor
+            )
             cursor = conn.cursor(MySQLdb.cursors.DictCursor)
 
             cursor.execute("SELECT * FROM User WHERE email = %s", (email,))

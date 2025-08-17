@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
 from ..utils.email_utils import send_notification_email
+import os
 
 class AdminBookingActionsAPIView(APIView):
     def post(self, request):
@@ -19,12 +20,14 @@ class AdminBookingActionsAPIView(APIView):
 
         conn = None
         try:
+            # --- 2. Use os.environ.get() to read environment variables ---
             conn = MySQLdb.connect(
-                host="db", user="root", password="Aliprs2005",
-                database="safarticket", port=3306,
-                charset='utf8mb4',
-                cursorclass=MySQLdb.cursors.DictCursor,
-                use_unicode=True
+                host=os.environ.get('DB_HOST'),
+                user=os.environ.get('DB_USER'),
+                password=os.environ.get('DB_PASSWORD'),
+                database=os.environ.get('DB_NAME'),
+                port=int(os.environ.get('DB_PORT')),
+                cursorclass=MySQLdb.cursors.DictCursor
             )
             cursor = conn.cursor()
             conn.begin()

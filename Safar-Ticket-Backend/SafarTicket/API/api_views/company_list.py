@@ -2,6 +2,7 @@ import MySQLdb
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from ..utils.translations import COMPANIES_FA, translate_from_dict
+import os
 
 class TransportCompanyListView(APIView):
     def get(self, request):
@@ -9,7 +10,13 @@ class TransportCompanyListView(APIView):
         transport_type = request.query_params.get('transport_type', None)
         conn = None
         try:
-            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306)
+            conn = MySQLdb.connect(
+                host=os.environ.get('DB_HOST'),
+                user=os.environ.get('DB_USER'),
+                password=os.environ.get('DB_PASSWORD'),
+                database=os.environ.get('DB_NAME'),
+                port=int(os.environ.get('DB_PORT')),
+            )
             cursor = conn.cursor()
             
             query = "SELECT DISTINCT company_name FROM TransportCompany"

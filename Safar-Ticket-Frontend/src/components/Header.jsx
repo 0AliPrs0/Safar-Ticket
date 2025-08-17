@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
+import logoIcon from '../assets/logo-icon.svg'; 
 
 const MenuIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>;
 const WalletIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/></svg>;
@@ -22,7 +23,10 @@ function Header({ isAuthenticated, onMenuClick, user, onChargeClick, hasPendingP
                             {hasPendingPayment && <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
                         </button>
                     )}
-                    <div className="text-2xl font-bold text-primary-blue dark:text-white cursor-pointer" onClick={() => navigate('/')}>✈️ SafarTicket</div>
+                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
+                        <img src={logoIcon} alt="SafarTicket Icon" className="h-12" />
+                        <span className="text-2xl font-bold text-primary-blue dark:text-white hidden sm:block">SafarTicket</span>
+                    </div>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-4">
                     <LanguageSwitcher />

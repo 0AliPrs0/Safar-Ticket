@@ -3,6 +3,7 @@ import hashlib
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import re
+import os
 
 class ChangePasswordAPIView(APIView):
     def _is_password_strong(self, password):
@@ -31,7 +32,14 @@ class ChangePasswordAPIView(APIView):
         conn = None
         cursor = None
         try:
-            conn = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306, cursorclass=MySQLdb.cursors.DictCursor)
+            conn = MySQLdb.connect(
+                host=os.environ.get('DB_HOST'),
+                user=os.environ.get('DB_USER'),
+                password=os.environ.get('DB_PASSWORD'),
+                database=os.environ.get('DB_NAME'),
+                port=int(os.environ.get('DB_PORT')),
+                cursorclass=MySQLdb.cursors.DictCursor
+            )
             cursor = conn.cursor()
 
             cursor.execute("SELECT password_hash FROM User WHERE user_id = %s", (user_id,))

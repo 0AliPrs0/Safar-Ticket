@@ -2,14 +2,21 @@ import MySQLdb
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from ..utils.translations import CITIES_FA, translate_from_dict
+import os
 
 class CityListView(APIView):
     def get(self, request):
         lang = request.headers.get('Accept-Language', 'en')
         db = None
         try:
-            db = MySQLdb.connect(host="db", user="root", password="Aliprs2005", database="safarticket", port=3306)
-            cursor = db.cursor()
+            conn = MySQLdb.connect(
+                host=os.environ.get('DB_HOST'),
+                user=os.environ.get('DB_USER'),
+                password=os.environ.get('DB_PASSWORD'),
+                database=os.environ.get('DB_NAME'),
+                port=int(os.environ.get('DB_PORT')),
+            )
+            cursor = conn.cursor()
             
             cursor.execute("SELECT city_id, province_name, city_name FROM City")
             rows = cursor.fetchall()

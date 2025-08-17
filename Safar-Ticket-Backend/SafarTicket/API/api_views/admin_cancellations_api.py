@@ -2,6 +2,7 @@ import MySQLdb
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import datetime, timedelta
+import os
 
 class AdminCancellationsListView(APIView):
     def get(self, request):
@@ -12,10 +13,12 @@ class AdminCancellationsListView(APIView):
         conn = None
         try:
             conn = MySQLdb.connect(
-                host="db", user="root", password="Aliprs2005",
-                database="safarticket", port=3306,
-                cursorclass=MySQLdb.cursors.DictCursor,
-                charset='utf8mb4', use_unicode=True
+                host=os.environ.get('DB_HOST'),
+                user=os.environ.get('DB_USER'),
+                password=os.environ.get('DB_PASSWORD'),
+                database=os.environ.get('DB_NAME'),
+                port=int(os.environ.get('DB_PORT')),
+                cursorclass=MySQLdb.cursors.DictCursor
             )
             cursor = conn.cursor()
 

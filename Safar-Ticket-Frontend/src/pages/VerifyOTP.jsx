@@ -5,6 +5,7 @@ import LoadingIndicator from '../components/LoadingIndicator';
 import AuthFormContainer from '../components/AuthFormContainer';
 import OtpInput from '../components/OtpInput';
 
+
 function useQuery() {
     return new URLSearchParams(useLocation().search);
 }
@@ -23,6 +24,7 @@ function VerifyOTP() {
     
     const email = location.state?.email || query.get('email');
     const hasAutoSubmitted = useRef(false);
+
 
     useEffect(() => {
         const otpFromQuery = query.get('otp');
@@ -107,10 +109,12 @@ function VerifyOTP() {
 
     return (
         <AuthFormContainer title="Verify Your Account">
-            <div className="text-center text-gray-600 dark:text-gray-300 mb-8">
-                <p>An OTP has been sent to <strong>{email}</strong>.</p>
+            {/* --- FIX IS HERE --- */}
+            <div className="text-center text-gray-600 dark:text-gray-400 mb-8">
+                <p>An OTP has been sent to <strong className="font-bold text-gray-800 dark:text-gray-200">{email}</strong>.</p>
                 <p>Please enter the 6-digit code below.</p>
             </div>
+            {/* --- END OF FIX --- */}
             <form onSubmit={handleManualSubmit} className="space-y-8">
                 <OtpInput value={otp} onChange={setOtp} />
                 

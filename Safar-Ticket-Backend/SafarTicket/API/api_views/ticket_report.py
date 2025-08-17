@@ -3,6 +3,7 @@ import redis
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import datetime
+import os
 
 
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
@@ -26,10 +27,12 @@ class TicketReportAPIView(APIView):
         cursor = None
         try:
             conn = MySQLdb.connect(
-                host="db", user="root", password="Aliprs2005",
-                database="safarticket", port=3306,
-                cursorclass=MySQLdb.cursors.DictCursor,
-                use_unicode=True
+                host=os.environ.get('DB_HOST'),
+                user=os.environ.get('DB_USER'),
+                password=os.environ.get('DB_PASSWORD'),
+                database=os.environ.get('DB_NAME'),
+                port=int(os.environ.get('DB_PORT')),
+                cursorclass=MySQLdb.cursors.DictCursor
             )
             cursor = conn.cursor()
             conn.begin()
