@@ -1,4 +1,4 @@
-# <img src="./docs/images/logo-icon.svg" width="50" alt="SafarTicket Logo" valign="middle" /> SafarTicket
+# <img src="https://github.com/0AliPrs0/Safar-Ticket/docs/images/logo-icon.svg" width="50" alt="SafarTicket Logo" valign="middle" /> SafarTicket
 
 This project, developed as part of a database course, is a complete platform for searching, reserving, and purchasing travel tickets (flights, trains, and buses). It features a modern, multi-layered architecture, including a user-facing panel and a full-featured admin panel.
 
@@ -23,8 +23,8 @@ To run this project locally, you will need **Docker** and **Docker Compose**.
 
 **1. Clone the Repository:**
 ```bash
-git clone <your-repository-url>
-cd <project-folder>
+git clone https://github.com/0AliPrs0/Safar-Ticket.git
+cd SafarTicket
 ```
 
 ---
