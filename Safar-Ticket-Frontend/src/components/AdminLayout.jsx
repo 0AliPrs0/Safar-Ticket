@@ -11,6 +11,8 @@ const SettingsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-
 const LogoutIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>;
 const ProfileIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
 const CancelIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>;
+const CreateTravelIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+
 
 const AdminSidebar = () => {
     const { t } = useTranslation();
@@ -22,6 +24,8 @@ const AdminSidebar = () => {
         { name: t('admin_dashboard'), icon: <DashboardIcon />, path: '/admin/dashboard' },
         { name: t('manage_users'), icon: <UsersIcon />, path: '/admin/users' },
         { name: t('manage_bookings'), icon: <BookingsIcon />, path: '/admin/bookings' },
+        // --- ADDED THIS LINE ---
+        { name: t('create_travel_menu'), icon: <CreateTravelIcon />, path: '/admin/create-travel' },
         { name: t('manage_cancellations'), icon: <CancelIcon />, path: '/admin/cancellations' }, 
         { name: t('profile'), icon: <ProfileIcon />, path: '/admin/profile' },
         { name: t('settings'), icon: <SettingsIcon />, path: '/admin/settings' },

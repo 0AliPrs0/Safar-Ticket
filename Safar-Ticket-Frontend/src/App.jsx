@@ -25,6 +25,7 @@ import AdminReports from './pages/AdminReports';
 import AdminCancellations from './pages/AdminCancellations';
 import AdminBookings from './pages/AdminBookings';
 import AdminManageUsers from './pages/AdminManageUsers'; 
+import AdminCreateTravel from './pages/AdminCreateTravel'; 
 // Components
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -79,6 +80,7 @@ function App() {
               <Route path="cancellations" element={<AdminCancellations />} />
               <Route path="bookings" element={<AdminBookings />} />
               <Route path="users" element={<AdminManageUsers />} />
+              <Route path="create-travel" element={<AdminCreateTravel />} /> 
             </Route>
             
             <Route path="*" element={<NotFound />} />
