@@ -4,9 +4,10 @@ import Select from 'react-select';
 import api from '../api';
 import LoadingIndicator from '../components/LoadingIndicator';
 import Notification from '../components/Notification';
+import { enToFa } from '../i18n';
 
 function AdminCreateTravel() {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [formData, setFormData] = useState({
         transport_type: { value: 'plane', label: t('transport_type_plane') },
         departure_city: null,
@@ -34,6 +35,13 @@ function AdminCreateTravel() {
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     const minDateTime = now.toISOString().slice(0, 16);
 
+    const getTranslatedLabel = (englishName, category) => {
+        if (i18n.language === 'fa') {
+            return enToFa[category]?.[englishName] || englishName;
+        }
+        return englishName;
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -41,63 +49,70 @@ function AdminCreateTravel() {
                     api.get('/api/cities/'),
                     api.get('/api/companies/')
                 ]);
-                setCities(citiesRes.data.map(c => ({ value: c.city_id, label: c.city_name })));
-                setCompanies(companiesRes.data.map(c => ({ value: c, label: c })));
+                setCities(citiesRes.data.map(c => ({ value: c.city_id, label: getTranslatedLabel(c.city_name, 'cities') })));
+                setCompanies(companiesRes.data.map(c => ({ value: c, label: getTranslatedLabel(c, 'companies') })));
             } catch (error) {
                 setNotification({ message: 'Failed to load initial data.', type: 'error' });
             }
         };
         fetchData();
-    }, []);
+    }, [i18n.language]);
 
-    // --- FIX: Fetch terminals when city OR transport_type changes ---
     useEffect(() => {
         if (formData.departure_city && formData.transport_type) {
             setFormData(prev => ({ ...prev, departure_terminal_id: null }));
             api.get(`/api/terminals/?city_id=${formData.departure_city.value}&transport_type=${formData.transport_type.value}`)
-                .then(res => setDepartureTerminals(res.data.map(t => ({ value: t.terminal_id, label: t.terminal_name }))))
+                .then(res => setDepartureTerminals(res.data.map(t => ({ value: t.terminal_id, label: getTranslatedLabel(t.terminal_name, 'terminals') }))))
                 .catch(() => setNotification({ message: 'Failed to load departure terminals.', type: 'error' }));
         }
-    }, [formData.departure_city, formData.transport_type]);
+    }, [formData.departure_city, formData.transport_type, i18n.language]);
 
     useEffect(() => {
         if (formData.destination_city && formData.transport_type) {
             setFormData(prev => ({ ...prev, destination_terminal_id: null }));
             api.get(`/api/terminals/?city_id=${formData.destination_city.value}&transport_type=${formData.transport_type.value}`)
-                .then(res => setDestinationTerminals(res.data.map(t => ({ value: t.terminal_id, label: t.terminal_name }))))
+                .then(res => setDestinationTerminals(res.data.map(t => ({ value: t.terminal_id, label: getTranslatedLabel(t.terminal_name, 'terminals') }))))
                 .catch(() => setNotification({ message: 'Failed to load destination terminals.', type: 'error' }));
         }
-    }, [formData.destination_city, formData.transport_type]);
+    }, [formData.destination_city, formData.transport_type, i18n.language]);
     
     const handleSubmit = async (e) => {
         e.preventDefault();
         setNotification({ message: '', type: '' });
 
         if (formData.departure_terminal_id?.value && formData.departure_terminal_id.value === formData.destination_terminal_id?.value) {
-            setNotification({ message: "Origin and destination terminals cannot be the same.", type: 'error' });
+            setNotification({ message: t("Origin and destination terminals cannot be the same."), type: 'error' });
             return;
         }
         if (new Date(formData.arrival_time) <= new Date(formData.departure_time)) {
-            setNotification({ message: "Arrival time must be after departure time.", type: 'error' });
+            setNotification({ message: t("Arrival time must be after departure time."), type: 'error' });
             return;
         }
-        if (formData.is_round_trip && (new Date(formData.return_time) <= new Date(formData.arrival_time))) {
-            setNotification({ message: "Return time must be after arrival time.", type: 'error' });
+        if (formData.is_round_trip && formData.return_time && (new Date(formData.return_time) <= new Date(formData.arrival_time))) {
+            setNotification({ message: t("Return time must be after arrival time."), type: 'error' });
             return;
         }
 
         const dataToSubmit = {
-            ...Object.fromEntries(Object.entries(formData).map(([key, value]) => [key, value?.value ?? value])),
+            transport_type: formData.transport_type.value,
             departure_terminal_id: formData.departure_terminal_id.value,
             destination_terminal_id: formData.destination_terminal_id.value,
+            departure_time: formData.departure_time,
+            arrival_time: formData.arrival_time,
+            total_capacity: formData.total_capacity,
+            price: formData.price,
+            travel_class: formData.travel_class.value,
+            is_round_trip: formData.is_round_trip,
+            return_time: formData.is_round_trip ? formData.return_time : null,
+            company_name: formData.company_name.value
         };
         
         setLoading(true);
         try {
             await api.post('/api/admin/travels/create/', dataToSubmit);
-            setNotification({ message: 'Travel created successfully!', type: 'success' });
+            setNotification({ message: t('Travel created successfully!'), type: 'success' });
         } catch (error) {
-            setNotification({ message: error.response?.data?.error || 'Failed to create travel.', type: 'error' });
+            setNotification({ message: error.response?.data?.error || t('Failed to create travel.'), type: 'error' });
         } finally {
             setLoading(false);
         }
@@ -112,21 +127,10 @@ function AdminCreateTravel() {
         setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
     };
     
-    // --- FIX: Added solid backgrounds for react-select components ---
-    const reactSelectStyles = {
-        control: (baseStyles) => ({ ...baseStyles, backgroundColor: 'var(--select-bg)', borderColor: 'var(--select-border)' }),
-        menu: (baseStyles) => ({ ...baseStyles, backgroundColor: 'var(--select-bg)' }),
-        option: (baseStyles, { isFocused, isSelected }) => ({
-            ...baseStyles,
-            backgroundColor: isSelected ? '#0D47A1' : isFocused ? 'var(--select-option-hover-bg)' : 'transparent',
-            color: isSelected ? 'white' : 'var(--select-text-color)',
-            ':active': { ...baseStyles[':active'], backgroundColor: '#0D47A1' }
-        }),
-        singleValue: (base) => ({...base, color: 'var(--select-text-color)'}),
-        input: (base) => ({...base, color: 'var(--select-text-color)'}),
+    const customSelectStyles = { 
+        control: (provided) => ({ ...provided, minHeight: '60px', borderRadius: '0.5rem' }), 
+        menu: (provided) => ({...provided, zIndex: 10}) 
     };
-    
-    const customSelectStyles = { control: (provided) => ({ ...provided, minHeight: '60px', borderRadius: '0.5rem' }), menu: (provided) => ({...provided, zIndex: 10}) };
 
     return (
         <div className="react-select-container">

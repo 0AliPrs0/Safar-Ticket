@@ -2,8 +2,6 @@ import MySQLdb
 from rest_framework.views import APIView
 from rest_framework.response import Response
 import os
-import datetime
-# --- FIX: Corrected the import path to remove the non-existent 'utils' directory ---
 from ..es_utils import index_travel_by_id
 
 class AdminCreateTravelAPIView(APIView):
@@ -34,6 +32,7 @@ class AdminCreateTravelAPIView(APIView):
                 password=os.environ.get('DB_PASSWORD'), database=os.environ.get('DB_NAME'),
                 port=int(os.environ.get('DB_PORT')), 
                 cursorclass=MySQLdb.cursors.DictCursor,
+                charset='utf8mb4',
                 use_unicode=True
             )
             cursor = conn.cursor()
