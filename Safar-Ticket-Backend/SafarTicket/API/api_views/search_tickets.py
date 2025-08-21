@@ -24,6 +24,9 @@ class SearchTicketsAPIView(APIView):
         company_name = data.get('company_name')
         travel_class = data.get('travel_class')
         is_round_trip = data.get('is_round_trip')
+        if is_round_trip == False:
+            is_round_trip = None
+
 
         if not all([origin_city_name, destination_city_name, travel_date_str]):
             return Response({'error': 'Origin, destination, and travel date are required.'}, status=400)
@@ -61,7 +64,7 @@ class SearchTicketsAPIView(APIView):
                 query_filters.append({"range": {"price": price_range}})
 
             if company_name:
-                query_filters.append({"match": {"transport_company_name": company_name}})
+                query_filters.append({"term": {"transport_company_name.keyword": company_name}})
                 
             if travel_class:
                 query_filters.append({"match": {"travel_class": travel_class}})

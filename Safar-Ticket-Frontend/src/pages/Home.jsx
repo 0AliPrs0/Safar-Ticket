@@ -211,7 +211,7 @@ function Home() {
         
         let originCityEn = params.origin?.value;
         let destinationCityEn = params.destination?.value;
-        let company = params.company?.value;
+        let company = params.company;
 
         if (i18n.language === 'fa') {
             originCityEn = faToEn.cities[originCityEn] || originCityEn;
