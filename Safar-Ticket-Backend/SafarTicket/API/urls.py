@@ -47,6 +47,8 @@ from .api_views.admin_users_api import (
     AdminUserBookingsView, 
     AdminUserStatusView
 )
+from .api_views.terminal_list import TerminalListView
+from .api_views.admin_travels_api import AdminCreateTravelAPIView
 
 urlpatterns = [
     path('signup/', SignupUserAPIView.as_view()),
@@ -98,4 +100,6 @@ urlpatterns = [
     path('admin/users/<int:user_id>/', AdminUserDetailView.as_view(), name='admin-user-detail'),
     path('admin/users/<int:user_id>/bookings/', AdminUserBookingsView.as_view(), name='admin-user-bookings'),
     path('admin/users/<int:user_id>/status/', AdminUserStatusView.as_view(), name='admin-user-status'),
+    path('terminals/', TerminalListView.as_view(), name='terminal-list'),
+    path('admin/travels/create/', AdminCreateTravelAPIView.as_view(), name='admin-create-travel'),
 ]

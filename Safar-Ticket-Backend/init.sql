@@ -777,6 +777,133 @@
     ('bus', 55, 131, '2025-08-18 23:50:00', '2025-08-19 11:00:00', 44, 41, 6, 680000, true, 'VIP'),
     ('plane', 59, 129, '2025-08-20 17:00:00', '2025-08-20 18:30:00', 120, 115, 21, 4200000, false, 'VIP');
 
+    -- Add 3 new travels from Ardabil to Tehran for 2025-08-25 with full details and tickets
+
+    -- 1. Flight from Ardabil to Tehran
+    INSERT INTO Travel (transport_type, departure_terminal_id, destination_terminal_id, departure_time, arrival_time, total_capacity, remaining_capacity, transport_company_id, price, is_round_trip, travel_class, return_time)
+    VALUES
+    ('plane', 48, 1, '2025-08-25 10:30:00', '2025-08-25 11:45:00', 150, 150, 21, 1850000, false, 'economy', NULL);
+    SET @flight_travel_id = LAST_INSERT_ID();
+
+    INSERT INTO VehicleDetail (vehicle_type) VALUES ('flight');
+    SET @flight_vehicle_id = LAST_INSERT_ID();
+    INSERT INTO FlightDetail (flight_id, airline_name, flight_class, stops, flight_number, origin_airport, destination_airport, facilities)
+    VALUES (@flight_vehicle_id, 'Iran Air', 'economy', 0, CONCAT('IR-', FLOOR(500 + RAND() * 100)), 'ADU', 'IKA', '{"meal": "snack"}');
+
+    -- Add all 150 tickets for the flight
+    INSERT INTO Ticket (travel_id, vehicle_id, seat_number) VALUES
+    (@flight_travel_id, @flight_vehicle_id, 1), (@flight_travel_id, @flight_vehicle_id, 2), (@flight_travel_id, @flight_vehicle_id, 3), (@flight_travel_id, @flight_vehicle_id, 4), (@flight_travel_id, @flight_vehicle_id, 5),
+    (@flight_travel_id, @flight_vehicle_id, 6), (@flight_travel_id, @flight_vehicle_id, 7), (@flight_travel_id, @flight_vehicle_id, 8), (@flight_travel_id, @flight_vehicle_id, 9), (@flight_travel_id, @flight_vehicle_id, 10),
+    (@flight_travel_id, @flight_vehicle_id, 11), (@flight_travel_id, @flight_vehicle_id, 12), (@flight_travel_id, @flight_vehicle_id, 13), (@flight_travel_id, @flight_vehicle_id, 14), (@flight_travel_id, @flight_vehicle_id, 15),
+    (@flight_travel_id, @flight_vehicle_id, 16), (@flight_travel_id, @flight_vehicle_id, 17), (@flight_travel_id, @flight_vehicle_id, 18), (@flight_travel_id, @flight_vehicle_id, 19), (@flight_travel_id, @flight_vehicle_id, 20),
+    (@flight_travel_id, @flight_vehicle_id, 21), (@flight_travel_id, @flight_vehicle_id, 22), (@flight_travel_id, @flight_vehicle_id, 23), (@flight_travel_id, @flight_vehicle_id, 24), (@flight_travel_id, @flight_vehicle_id, 25),
+    (@flight_travel_id, @flight_vehicle_id, 26), (@flight_travel_id, @flight_vehicle_id, 27), (@flight_travel_id, @flight_vehicle_id, 28), (@flight_travel_id, @flight_vehicle_id, 29), (@flight_travel_id, @flight_vehicle_id, 30),
+    (@flight_travel_id, @flight_vehicle_id, 31), (@flight_travel_id, @flight_vehicle_id, 32), (@flight_travel_id, @flight_vehicle_id, 33), (@flight_travel_id, @flight_vehicle_id, 34), (@flight_travel_id, @flight_vehicle_id, 35),
+    (@flight_travel_id, @flight_vehicle_id, 36), (@flight_travel_id, @flight_vehicle_id, 37), (@flight_travel_id, @flight_vehicle_id, 38), (@flight_travel_id, @flight_vehicle_id, 39), (@flight_travel_id, @flight_vehicle_id, 40),
+    (@flight_travel_id, @flight_vehicle_id, 41), (@flight_travel_id, @flight_vehicle_id, 42), (@flight_travel_id, @flight_vehicle_id, 43), (@flight_travel_id, @flight_vehicle_id, 44), (@flight_travel_id, @flight_vehicle_id, 45),
+    (@flight_travel_id, @flight_vehicle_id, 46), (@flight_travel_id, @flight_vehicle_id, 47), (@flight_travel_id, @flight_vehicle_id, 48), (@flight_travel_id, @flight_vehicle_id, 49), (@flight_travel_id, @flight_vehicle_id, 50),
+    (@flight_travel_id, @flight_vehicle_id, 51), (@flight_travel_id, @flight_vehicle_id, 52), (@flight_travel_id, @flight_vehicle_id, 53), (@flight_travel_id, @flight_vehicle_id, 54), (@flight_travel_id, @flight_vehicle_id, 55),
+    (@flight_travel_id, @flight_vehicle_id, 56), (@flight_travel_id, @flight_vehicle_id, 57), (@flight_travel_id, @flight_vehicle_id, 58), (@flight_travel_id, @flight_vehicle_id, 59), (@flight_travel_id, @flight_vehicle_id, 60),
+    (@flight_travel_id, @flight_vehicle_id, 61), (@flight_travel_id, @flight_vehicle_id, 62), (@flight_travel_id, @flight_vehicle_id, 63), (@flight_travel_id, @flight_vehicle_id, 64), (@flight_travel_id, @flight_vehicle_id, 65),
+    (@flight_travel_id, @flight_vehicle_id, 66), (@flight_travel_id, @flight_vehicle_id, 67), (@flight_travel_id, @flight_vehicle_id, 68), (@flight_travel_id, @flight_vehicle_id, 69), (@flight_travel_id, @flight_vehicle_id, 70),
+    (@flight_travel_id, @flight_vehicle_id, 71), (@flight_travel_id, @flight_vehicle_id, 72), (@flight_travel_id, @flight_vehicle_id, 73), (@flight_travel_id, @flight_vehicle_id, 74), (@flight_travel_id, @flight_vehicle_id, 75),
+    (@flight_travel_id, @flight_vehicle_id, 76), (@flight_travel_id, @flight_vehicle_id, 77), (@flight_travel_id, @flight_vehicle_id, 78), (@flight_travel_id, @flight_vehicle_id, 79), (@flight_travel_id, @flight_vehicle_id, 80),
+    (@flight_travel_id, @flight_vehicle_id, 81), (@flight_travel_id, @flight_vehicle_id, 82), (@flight_travel_id, @flight_vehicle_id, 83), (@flight_travel_id, @flight_vehicle_id, 84), (@flight_travel_id, @flight_vehicle_id, 85),
+    (@flight_travel_id, @flight_vehicle_id, 86), (@flight_travel_id, @flight_vehicle_id, 87), (@flight_travel_id, @flight_vehicle_id, 88), (@flight_travel_id, @flight_vehicle_id, 89), (@flight_travel_id, @flight_vehicle_id, 90),
+    (@flight_travel_id, @flight_vehicle_id, 91), (@flight_travel_id, @flight_vehicle_id, 92), (@flight_travel_id, @flight_vehicle_id, 93), (@flight_travel_id, @flight_vehicle_id, 94), (@flight_travel_id, @flight_vehicle_id, 95),
+    (@flight_travel_id, @flight_vehicle_id, 96), (@flight_travel_id, @flight_vehicle_id, 97), (@flight_travel_id, @flight_vehicle_id, 98), (@flight_travel_id, @flight_vehicle_id, 99), (@flight_travel_id, @flight_vehicle_id, 100),
+    (@flight_travel_id, @flight_vehicle_id, 101), (@flight_travel_id, @flight_vehicle_id, 102), (@flight_travel_id, @flight_vehicle_id, 103), (@flight_travel_id, @flight_vehicle_id, 104), (@flight_travel_id, @flight_vehicle_id, 105),
+    (@flight_travel_id, @flight_vehicle_id, 106), (@flight_travel_id, @flight_vehicle_id, 107), (@flight_travel_id, @flight_vehicle_id, 108), (@flight_travel_id, @flight_vehicle_id, 109), (@flight_travel_id, @flight_vehicle_id, 110),
+    (@flight_travel_id, @flight_vehicle_id, 111), (@flight_travel_id, @flight_vehicle_id, 112), (@flight_travel_id, @flight_vehicle_id, 113), (@flight_travel_id, @flight_vehicle_id, 114), (@flight_travel_id, @flight_vehicle_id, 115),
+    (@flight_travel_id, @flight_vehicle_id, 116), (@flight_travel_id, @flight_vehicle_id, 117), (@flight_travel_id, @flight_vehicle_id, 118), (@flight_travel_id, @flight_vehicle_id, 119), (@flight_travel_id, @flight_vehicle_id, 120),
+    (@flight_travel_id, @flight_vehicle_id, 121), (@flight_travel_id, @flight_vehicle_id, 122), (@flight_travel_id, @flight_vehicle_id, 123), (@flight_travel_id, @flight_vehicle_id, 124), (@flight_travel_id, @flight_vehicle_id, 125),
+    (@flight_travel_id, @flight_vehicle_id, 126), (@flight_travel_id, @flight_vehicle_id, 127), (@flight_travel_id, @flight_vehicle_id, 128), (@flight_travel_id, @flight_vehicle_id, 129), (@flight_travel_id, @flight_vehicle_id, 130),
+    (@flight_travel_id, @flight_vehicle_id, 131), (@flight_travel_id, @flight_vehicle_id, 132), (@flight_travel_id, @flight_vehicle_id, 133), (@flight_travel_id, @flight_vehicle_id, 134), (@flight_travel_id, @flight_vehicle_id, 135),
+    (@flight_travel_id, @flight_vehicle_id, 136), (@flight_travel_id, @flight_vehicle_id, 137), (@flight_travel_id, @flight_vehicle_id, 138), (@flight_travel_id, @flight_vehicle_id, 139), (@flight_travel_id, @flight_vehicle_id, 140),
+    (@flight_travel_id, @flight_vehicle_id, 141), (@flight_travel_id, @flight_vehicle_id, 142), (@flight_travel_id, @flight_vehicle_id, 143), (@flight_travel_id, @flight_vehicle_id, 144), (@flight_travel_id, @flight_vehicle_id, 145),
+    (@flight_travel_id, @flight_vehicle_id, 146), (@flight_travel_id, @flight_vehicle_id, 147), (@flight_travel_id, @flight_vehicle_id, 148), (@flight_travel_id, @flight_vehicle_id, 149), (@flight_travel_id, @flight_vehicle_id, 150);
+
+
+    -- 2. Train from Ardabil to Tehran
+    INSERT INTO Travel (transport_type, departure_terminal_id, destination_terminal_id, departure_time, arrival_time, total_capacity, remaining_capacity, transport_company_id, price, is_round_trip, travel_class, return_time)
+    VALUES
+    ('train', 49, 3, '2025-08-25 22:00:00', '2025-08-26 07:30:00', 200, 200, 11, 750000, false, 'business', NULL);
+    SET @train_travel_id = LAST_INSERT_ID();
+
+    INSERT INTO VehicleDetail (vehicle_type) VALUES ('train');
+    SET @train_vehicle_id = LAST_INSERT_ID();
+    INSERT INTO TrainDetail (train_id, train_rating, private_cabin, facilities)
+    VALUES (@train_vehicle_id, '4', true, '{"wifi": true, "meal_service": "full", "power_outlets": true}');
+
+    -- Add all 200 tickets for the train
+    INSERT INTO Ticket (travel_id, vehicle_id, seat_number) VALUES
+    (@train_travel_id, @train_vehicle_id, 1), (@train_travel_id, @train_vehicle_id, 2), (@train_travel_id, @train_vehicle_id, 3), (@train_travel_id, @train_vehicle_id, 4), (@train_travel_id, @train_vehicle_id, 5),
+    (@train_travel_id, @train_vehicle_id, 6), (@train_travel_id, @train_vehicle_id, 7), (@train_travel_id, @train_vehicle_id, 8), (@train_travel_id, @train_vehicle_id, 9), (@train_travel_id, @train_vehicle_id, 10),
+    (@train_travel_id, @train_vehicle_id, 11), (@train_travel_id, @train_vehicle_id, 12), (@train_travel_id, @train_vehicle_id, 13), (@train_travel_id, @train_vehicle_id, 14), (@train_travel_id, @train_vehicle_id, 15),
+    (@train_travel_id, @train_vehicle_id, 16), (@train_travel_id, @train_vehicle_id, 17), (@train_travel_id, @train_vehicle_id, 18), (@train_travel_id, @train_vehicle_id, 19), (@train_travel_id, @train_vehicle_id, 20),
+    (@train_travel_id, @train_vehicle_id, 21), (@train_travel_id, @train_vehicle_id, 22), (@train_travel_id, @train_vehicle_id, 23), (@train_travel_id, @train_vehicle_id, 24), (@train_travel_id, @train_vehicle_id, 25),
+    (@train_travel_id, @train_vehicle_id, 26), (@train_travel_id, @train_vehicle_id, 27), (@train_travel_id, @train_vehicle_id, 28), (@train_travel_id, @train_vehicle_id, 29), (@train_travel_id, @train_vehicle_id, 30),
+    (@train_travel_id, @train_vehicle_id, 31), (@train_travel_id, @train_vehicle_id, 32), (@train_travel_id, @train_vehicle_id, 33), (@train_travel_id, @train_vehicle_id, 34), (@train_travel_id, @train_vehicle_id, 35),
+    (@train_travel_id, @train_vehicle_id, 36), (@train_travel_id, @train_vehicle_id, 37), (@train_travel_id, @train_vehicle_id, 38), (@train_travel_id, @train_vehicle_id, 39), (@train_travel_id, @train_vehicle_id, 40),
+    (@train_travel_id, @train_vehicle_id, 41), (@train_travel_id, @train_vehicle_id, 42), (@train_travel_id, @train_vehicle_id, 43), (@train_travel_id, @train_vehicle_id, 44), (@train_travel_id, @train_vehicle_id, 45),
+    (@train_travel_id, @train_vehicle_id, 46), (@train_travel_id, @train_vehicle_id, 47), (@train_travel_id, @train_vehicle_id, 48), (@train_travel_id, @train_vehicle_id, 49), (@train_travel_id, @train_vehicle_id, 50),
+    (@train_travel_id, @train_vehicle_id, 51), (@train_travel_id, @train_vehicle_id, 52), (@train_travel_id, @train_vehicle_id, 53), (@train_travel_id, @train_vehicle_id, 54), (@train_travel_id, @train_vehicle_id, 55),
+    (@train_travel_id, @train_vehicle_id, 56), (@train_travel_id, @train_vehicle_id, 57), (@train_travel_id, @train_vehicle_id, 58), (@train_travel_id, @train_vehicle_id, 59), (@train_travel_id, @train_vehicle_id, 60),
+    (@train_travel_id, @train_vehicle_id, 61), (@train_travel_id, @train_vehicle_id, 62), (@train_travel_id, @train_vehicle_id, 63), (@train_travel_id, @train_vehicle_id, 64), (@train_travel_id, @train_vehicle_id, 65),
+    (@train_travel_id, @train_vehicle_id, 66), (@train_travel_id, @train_vehicle_id, 67), (@train_travel_id, @train_vehicle_id, 68), (@train_travel_id, @train_vehicle_id, 69), (@train_travel_id, @train_vehicle_id, 70),
+    (@train_travel_id, @train_vehicle_id, 71), (@train_travel_id, @train_vehicle_id, 72), (@train_travel_id, @train_vehicle_id, 73), (@train_travel_id, @train_vehicle_id, 74), (@train_travel_id, @train_vehicle_id, 75),
+    (@train_travel_id, @train_vehicle_id, 76), (@train_travel_id, @train_vehicle_id, 77), (@train_travel_id, @train_vehicle_id, 78), (@train_travel_id, @train_vehicle_id, 79), (@train_travel_id, @train_vehicle_id, 80),
+    (@train_travel_id, @train_vehicle_id, 81), (@train_travel_id, @train_vehicle_id, 82), (@train_travel_id, @train_vehicle_id, 83), (@train_travel_id, @train_vehicle_id, 84), (@train_travel_id, @train_vehicle_id, 85),
+    (@train_travel_id, @train_vehicle_id, 86), (@train_travel_id, @train_vehicle_id, 87), (@train_travel_id, @train_vehicle_id, 88), (@train_travel_id, @train_vehicle_id, 89), (@train_travel_id, @train_vehicle_id, 90),
+    (@train_travel_id, @train_vehicle_id, 91), (@train_travel_id, @train_vehicle_id, 92), (@train_travel_id, @train_vehicle_id, 93), (@train_travel_id, @train_vehicle_id, 94), (@train_travel_id, @train_vehicle_id, 95),
+    (@train_travel_id, @train_vehicle_id, 96), (@train_travel_id, @train_vehicle_id, 97), (@train_travel_id, @train_vehicle_id, 98), (@train_travel_id, @train_vehicle_id, 99), (@train_travel_id, @train_vehicle_id, 100),
+    (@train_travel_id, @train_vehicle_id, 101), (@train_travel_id, @train_vehicle_id, 102), (@train_travel_id, @train_vehicle_id, 103), (@train_travel_id, @train_vehicle_id, 104), (@train_travel_id, @train_vehicle_id, 105),
+    (@train_travel_id, @train_vehicle_id, 106), (@train_travel_id, @train_vehicle_id, 107), (@train_travel_id, @train_vehicle_id, 108), (@train_travel_id, @train_vehicle_id, 109), (@train_travel_id, @train_vehicle_id, 110),
+    (@train_travel_id, @train_vehicle_id, 111), (@train_travel_id, @train_vehicle_id, 112), (@train_travel_id, @train_vehicle_id, 113), (@train_travel_id, @train_vehicle_id, 114), (@train_travel_id, @train_vehicle_id, 115),
+    (@train_travel_id, @train_vehicle_id, 116), (@train_travel_id, @train_vehicle_id, 117), (@train_travel_id, @train_vehicle_id, 118), (@train_travel_id, @train_vehicle_id, 119), (@train_travel_id, @train_vehicle_id, 120),
+    (@train_travel_id, @train_vehicle_id, 121), (@train_travel_id, @train_vehicle_id, 122), (@train_travel_id, @train_vehicle_id, 123), (@train_travel_id, @train_vehicle_id, 124), (@train_travel_id, @train_vehicle_id, 125),
+    (@train_travel_id, @train_vehicle_id, 126), (@train_travel_id, @train_vehicle_id, 127), (@train_travel_id, @train_vehicle_id, 128), (@train_travel_id, @train_vehicle_id, 129), (@train_travel_id, @train_vehicle_id, 130),
+    (@train_travel_id, @train_vehicle_id, 131), (@train_travel_id, @train_vehicle_id, 132), (@train_travel_id, @train_vehicle_id, 133), (@train_travel_id, @train_vehicle_id, 134), (@train_travel_id, @train_vehicle_id, 135),
+    (@train_travel_id, @train_vehicle_id, 136), (@train_travel_id, @train_vehicle_id, 137), (@train_travel_id, @train_vehicle_id, 138), (@train_travel_id, @train_vehicle_id, 139), (@train_travel_id, @train_vehicle_id, 140),
+    (@train_travel_id, @train_vehicle_id, 141), (@train_travel_id, @train_vehicle_id, 142), (@train_travel_id, @train_vehicle_id, 143), (@train_travel_id, @train_vehicle_id, 144), (@train_travel_id, @train_vehicle_id, 145),
+    (@train_travel_id, @train_vehicle_id, 146), (@train_travel_id, @train_vehicle_id, 147), (@train_travel_id, @train_vehicle_id, 148), (@train_travel_id, @train_vehicle_id, 149), (@train_travel_id, @train_vehicle_id, 150),
+    (@train_travel_id, @train_vehicle_id, 151), (@train_travel_id, @train_vehicle_id, 152), (@train_travel_id, @train_vehicle_id, 153), (@train_travel_id, @train_vehicle_id, 154), (@train_travel_id, @train_vehicle_id, 155),
+    (@train_travel_id, @train_vehicle_id, 156), (@train_travel_id, @train_vehicle_id, 157), (@train_travel_id, @train_vehicle_id, 158), (@train_travel_id, @train_vehicle_id, 159), (@train_travel_id, @train_vehicle_id, 160),
+    (@train_travel_id, @train_vehicle_id, 161), (@train_travel_id, @train_vehicle_id, 162), (@train_travel_id, @train_vehicle_id, 163), (@train_travel_id, @train_vehicle_id, 164), (@train_travel_id, @train_vehicle_id, 165),
+    (@train_travel_id, @train_vehicle_id, 166), (@train_travel_id, @train_vehicle_id, 167), (@train_travel_id, @train_vehicle_id, 168), (@train_travel_id, @train_vehicle_id, 169), (@train_travel_id, @train_vehicle_id, 170),
+    (@train_travel_id, @train_vehicle_id, 171), (@train_travel_id, @train_vehicle_id, 172), (@train_travel_id, @train_vehicle_id, 173), (@train_travel_id, @train_vehicle_id, 174), (@train_travel_id, @train_vehicle_id, 175),
+    (@train_travel_id, @train_vehicle_id, 176), (@train_travel_id, @train_vehicle_id, 177), (@train_travel_id, @train_vehicle_id, 178), (@train_travel_id, @train_vehicle_id, 179), (@train_travel_id, @train_vehicle_id, 180),
+    (@train_travel_id, @train_vehicle_id, 181), (@train_travel_id, @train_vehicle_id, 182), (@train_travel_id, @train_vehicle_id, 183), (@train_travel_id, @train_vehicle_id, 184), (@train_travel_id, @train_vehicle_id, 185),
+    (@train_travel_id, @train_vehicle_id, 186), (@train_travel_id, @train_vehicle_id, 187), (@train_travel_id, @train_vehicle_id, 188), (@train_travel_id, @train_vehicle_id, 189), (@train_travel_id, @train_vehicle_id, 190),
+    (@train_travel_id, @train_vehicle_id, 191), (@train_travel_id, @train_vehicle_id, 192), (@train_travel_id, @train_vehicle_id, 193), (@train_travel_id, @train_vehicle_id, 194), (@train_travel_id, @train_vehicle_id, 195),
+    (@train_travel_id, @train_vehicle_id, 196), (@train_travel_id, @train_vehicle_id, 197), (@train_travel_id, @train_vehicle_id, 198), (@train_travel_id, @train_vehicle_id, 199), (@train_travel_id, @train_vehicle_id, 200);
+
+
+    -- 3. Bus from Ardabil to Tehran
+    INSERT INTO Travel (transport_type, departure_terminal_id, destination_terminal_id, departure_time, arrival_time, total_capacity, remaining_capacity, transport_company_id, price, is_round_trip, travel_class, return_time)
+    VALUES
+    ('bus', 50, 4, '2025-08-25 23:00:00', '2025-08-26 06:00:00', 44, 44, 1, 450000, false, 'VIP', NULL);
+    SET @bus_travel_id = LAST_INSERT_ID();
+
+    INSERT INTO VehicleDetail (vehicle_type) VALUES ('bus');
+    SET @bus_vehicle_id = LAST_INSERT_ID();
+    INSERT INTO BusDetail (bus_id, bus_company, bus_type, facilities, seat_arrangement)
+    VALUES (@bus_vehicle_id, 'Iran Peyma', 'VIP', '{"wifi": true, "usb_charger": true, "monitor": true}', '1+2');
+
+    -- Add all 44 tickets for the bus
+    INSERT INTO Ticket (travel_id, vehicle_id, seat_number) VALUES 
+    (@bus_travel_id, @bus_vehicle_id, 1), (@bus_travel_id, @bus_vehicle_id, 2), (@bus_travel_id, @bus_vehicle_id, 3), (@bus_travel_id, @bus_vehicle_id, 4), (@bus_travel_id, @bus_vehicle_id, 5),
+    (@bus_travel_id, @bus_vehicle_id, 6), (@bus_travel_id, @bus_vehicle_id, 7), (@bus_travel_id, @bus_vehicle_id, 8), (@bus_travel_id, @bus_vehicle_id, 9), (@bus_travel_id, @bus_vehicle_id, 10), 
+    (@bus_travel_id, @bus_vehicle_id, 11), (@bus_travel_id, @bus_vehicle_id, 12), (@bus_travel_id, @bus_vehicle_id, 13), (@bus_travel_id, @bus_vehicle_id, 14), (@bus_travel_id, @bus_vehicle_id, 15), 
+    (@bus_travel_id, @bus_vehicle_id, 16), (@bus_travel_id, @bus_vehicle_id, 17), (@bus_travel_id, @bus_vehicle_id, 18), (@bus_travel_id, @bus_vehicle_id, 19), (@bus_travel_id, @bus_vehicle_id, 20), 
+    (@bus_travel_id, @bus_vehicle_id, 21), (@bus_travel_id, @bus_vehicle_id, 22), (@bus_travel_id, @bus_vehicle_id, 23), (@bus_travel_id, @bus_vehicle_id, 24), (@bus_travel_id, @bus_vehicle_id, 25), 
+    (@bus_travel_id, @bus_vehicle_id, 26), (@bus_travel_id, @bus_vehicle_id, 27), (@bus_travel_id, @bus_vehicle_id, 28), (@bus_travel_id, @bus_vehicle_id, 29), (@bus_travel_id, @bus_vehicle_id, 30), 
+    (@bus_travel_id, @bus_vehicle_id, 31), (@bus_travel_id, @bus_vehicle_id, 32), (@bus_travel_id, @bus_vehicle_id, 33), (@bus_travel_id, @bus_vehicle_id, 34), (@bus_travel_id, @bus_vehicle_id, 35), 
+    (@bus_travel_id, @bus_vehicle_id, 36), (@bus_travel_id, @bus_vehicle_id, 37), (@bus_travel_id, @bus_vehicle_id, 38), (@bus_travel_id, @bus_vehicle_id, 39), (@bus_travel_id, @bus_vehicle_id, 40), 
+    (@bus_travel_id, @bus_vehicle_id, 41), (@bus_travel_id, @bus_vehicle_id, 42), (@bus_travel_id, @bus_vehicle_id, 43), (@bus_travel_id, @bus_vehicle_id, 44);
+
+
+
     UPDATE Travel
     SET Travel.departure_terminal_id = Travel.departure_terminal_id + 104
     WHERE Travel.travel_id < 3;
@@ -883,7 +1010,6 @@
     SET @last_vehicle_id_flight_15 = LAST_INSERT_ID();
     INSERT INTO FlightDetail (flight_id, airline_name, flight_class, stops, flight_number, origin_airport, destination_airport, facilities)
     VALUES (@last_vehicle_id_flight_15, 'Iran Airtour', 'economy', 0, CONCAT('B9-', FLOOR(900 + RAND() * 100)), 'MHD', 'KIH', '{"meal": "snack"}');
-
 
     INSERT INTO VehicleDetail (vehicle_type) VALUES ('train');
     SET @last_vehicle_id_train_1 = LAST_INSERT_ID();
@@ -1343,7 +1469,6 @@
     INSERT INTO Ticket (travel_id, vehicle_id, seat_number) VALUES (52, 39, 9);
 
 
-    
 
     INSERT INTO Reservation (user_id, ticket_id, status, reservation_time, expiration_time)
     VALUES
